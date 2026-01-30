@@ -6,45 +6,31 @@ interface Particle {
   vx: number
   vy: number
   size: number
-  baseSize: number
   opacity: number
-  hue: number
   life: number
   maxLife: number
-  targetX?: number
-  targetY?: number
-}
-
-interface TrailPoint {
-  x: number
-  y: number
-  age: number
-  opacity: number
 }
 
 export function NeonParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
-  const trailRef = useRef<TrailPoint[]>([])
-  const mouseRef = useRef({ x: -1000, y: -1000, isMoving: false })
-  const lastMouseRef = useRef({ x: 0, y: 0, time: 0 })
+  const mouseRef = useRef({ x: -1000, y: -1000 })
+  const targetMouseRef = useRef({ x: -1000, y: -1000 })
   const animationRef = useRef<number>()
   const timeRef = useRef(0)
 
-  const createParticle = useCallback((x: number, y: number, isMouseParticle = false): Particle => {
+  const createParticle = useCallback((x: number, y: number, fromMouse = false): Particle => {
     const angle = Math.random() * Math.PI * 2
-    const speed = isMouseParticle ? Math.random() * 2 + 0.5 : Math.random() * 0.3
+    const speed = fromMouse ? Math.random() * 1 + 0.3 : Math.random() * 0.2
     return {
       x,
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: isMouseParticle ? Math.random() * 5 + 3 : Math.random() * 3 + 1,
-      baseSize: isMouseParticle ? Math.random() * 5 + 3 : Math.random() * 3 + 1,
-      opacity: isMouseParticle ? 1 : Math.random() * 0.6 + 0.2,
-      hue: 150 + Math.random() * 30,
+      size: fromMouse ? Math.random() * 2 + 1 : Math.random() * 1.5 + 0.5,
+      opacity: fromMouse ? 0.8 : Math.random() * 0.3 + 0.1,
       life: 0,
-      maxLife: isMouseParticle ? 80 + Math.random() * 60 : 9999,
+      maxLife: fromMouse ? 100 + Math.random() * 50 : 99999,
     }
   }, [])
 
@@ -52,7 +38,7 @@ export function NeonParticles() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) return
 
     const resizeCanvas = () => {
@@ -67,256 +53,176 @@ export function NeonParticles() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Initialize ambient particles
-    const particleCount = 50
-    particlesRef.current = Array.from({ length: particleCount }, () =>
+    // Initialize particles - fewer for cleaner look
+    particlesRef.current = Array.from({ length: 35 }, () =>
       createParticle(
         Math.random() * window.innerWidth,
         Math.random() * window.innerHeight
       )
     )
 
-    // Global mouse tracking - works even when hovering over other elements
+    let lastSpawnTime = 0
+
     const handleMouseMove = (e: MouseEvent) => {
+      targetMouseRef.current = { x: e.clientX, y: e.clientY }
+
+      // Spawn particles occasionally on movement
       const now = Date.now()
-      const newX = e.clientX
-      const newY = e.clientY
-
-      const dx = newX - lastMouseRef.current.x
-      const dy = newY - lastMouseRef.current.y
-      const timeDiff = now - lastMouseRef.current.time
-      const speed = Math.sqrt(dx * dx + dy * dy) / Math.max(timeDiff, 1)
-
-      mouseRef.current = { x: newX, y: newY, isMoving: speed > 0.1 }
-
-      // Add trail points based on movement
-      if (speed > 0.1) {
-        trailRef.current.push({
-          x: newX,
-          y: newY,
-          age: 0,
-          opacity: Math.min(speed * 0.5, 1),
-        })
-
-        // Spawn particles based on speed
-        if (Math.random() < Math.min(speed * 0.3, 0.8)) {
-          particlesRef.current.push(createParticle(newX, newY, true))
-        }
+      if (now - lastSpawnTime > 80 && particlesRef.current.length < 60) {
+        particlesRef.current.push(createParticle(e.clientX, e.clientY, true))
+        lastSpawnTime = now
       }
-
-      lastMouseRef.current = { x: newX, y: newY, time: now }
     }
 
-    // Listen on window for global mouse tracking
     window.addEventListener('mousemove', handleMouseMove)
 
     const animate = () => {
       const width = window.innerWidth
       const height = window.innerHeight
-      timeRef.current += 0.016
+      timeRef.current += 0.01
 
-      // Clear with fade effect
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.12)'
-      ctx.fillRect(0, 0, width, height)
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height)
 
-      const particles = particlesRef.current
+      // Smooth mouse following
+      mouseRef.current.x += (targetMouseRef.current.x - mouseRef.current.x) * 0.15
+      mouseRef.current.y += (targetMouseRef.current.y - mouseRef.current.y) * 0.15
+
       const mouse = mouseRef.current
-      const trail = trailRef.current
+      const particles = particlesRef.current
 
-      // Draw and update cursor trail
-      for (let i = trail.length - 1; i >= 0; i--) {
-        const point = trail[i]
-        point.age++
-        point.opacity = Math.max(0, 1 - point.age / 25)
-
-        if (point.opacity <= 0) {
-          trail.splice(i, 1)
-          continue
-        }
-
-        // Trail glow
-        const trailGradient = ctx.createRadialGradient(
-          point.x, point.y, 0,
-          point.x, point.y, 25 * point.opacity
-        )
-        trailGradient.addColorStop(0, `hsla(160, 100%, 55%, ${point.opacity * 0.9})`)
-        trailGradient.addColorStop(0.4, `hsla(160, 100%, 45%, ${point.opacity * 0.4})`)
-        trailGradient.addColorStop(1, 'transparent')
-
-        ctx.beginPath()
-        ctx.arc(point.x, point.y, 25 * point.opacity, 0, Math.PI * 2)
-        ctx.fillStyle = trailGradient
-        ctx.fill()
-      }
-
-      // Draw main cursor glow
+      // Draw subtle cursor glow
       if (mouse.x > 0 && mouse.y > 0) {
-        const pulseSize = Math.sin(timeRef.current * 4) * 15 + 50
-        const cursorGradient = ctx.createRadialGradient(
+        const gradient = ctx.createRadialGradient(
           mouse.x, mouse.y, 0,
-          mouse.x, mouse.y, pulseSize
+          mouse.x, mouse.y, 80
         )
-        cursorGradient.addColorStop(0, 'hsla(160, 100%, 65%, 0.5)')
-        cursorGradient.addColorStop(0.3, 'hsla(160, 100%, 55%, 0.25)')
-        cursorGradient.addColorStop(0.6, 'hsla(160, 100%, 45%, 0.1)')
-        cursorGradient.addColorStop(1, 'transparent')
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.15)')
+        gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.05)')
+        gradient.addColorStop(1, 'transparent')
 
         ctx.beginPath()
-        ctx.arc(mouse.x, mouse.y, pulseSize, 0, Math.PI * 2)
-        ctx.fillStyle = cursorGradient
-        ctx.fill()
-
-        // Inner bright core
-        const coreGradient = ctx.createRadialGradient(
-          mouse.x, mouse.y, 0,
-          mouse.x, mouse.y, 8
-        )
-        coreGradient.addColorStop(0, 'hsla(160, 100%, 80%, 0.8)')
-        coreGradient.addColorStop(1, 'transparent')
-        ctx.beginPath()
-        ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2)
-        ctx.fillStyle = coreGradient
+        ctx.arc(mouse.x, mouse.y, 80, 0, Math.PI * 2)
+        ctx.fillStyle = gradient
         ctx.fill()
       }
 
       // Update and draw particles
       for (let i = particles.length - 1; i >= 0; i--) {
-        const particle = particles[i]
-        particle.life++
+        const p = particles[i]
+        p.life++
 
         // Remove dead particles
-        if (particle.life > particle.maxLife) {
+        if (p.life > p.maxLife) {
           particles.splice(i, 1)
           continue
         }
 
-        const lifeFade = particle.maxLife < 9999
-          ? Math.pow(1 - (particle.life / particle.maxLife), 0.5)
-          : 1
+        // Fade calculation
+        const fadeIn = Math.min(p.life / 20, 1)
+        const fadeOut = p.maxLife < 99999 ? Math.pow(1 - p.life / p.maxLife, 0.5) : 1
+        const fade = fadeIn * fadeOut
 
-        // Strong cursor attraction - particles FOLLOW the cursor
-        const dx = mouse.x - particle.x
-        const dy = mouse.y - particle.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
+        // Cursor attraction with smooth easing
+        if (mouse.x > 0) {
+          const dx = mouse.x - p.x
+          const dy = mouse.y - p.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
 
-        if (distance > 0 && mouse.x > 0) {
-          const maxAttractDistance = 300
-
-          if (distance < maxAttractDistance) {
-            // Attraction force - stronger when closer
-            const force = Math.pow((maxAttractDistance - distance) / maxAttractDistance, 1.5)
-            const attractionStrength = 0.15 * force
-
-            // Move toward cursor
-            particle.vx += (dx / distance) * attractionStrength
-            particle.vy += (dy / distance) * attractionStrength
-
-            // Add slight orbit effect
-            const orbitStrength = 0.03 * force
-            particle.vx += (dy / distance) * orbitStrength
-            particle.vy += (-dx / distance) * orbitStrength
-
-            // Grow when near cursor
-            particle.size = particle.baseSize * (1 + force * 1.5)
-            particle.opacity = Math.min(1, particle.opacity + force * 0.02)
-          } else {
-            particle.size = particle.baseSize
+          if (dist < 250 && dist > 0) {
+            const force = Math.pow((250 - dist) / 250, 2) * 0.08
+            p.vx += (dx / dist) * force
+            p.vy += (dy / dist) * force
           }
         }
 
-        // Update position
-        particle.x += particle.vx
-        particle.y += particle.vy
+        // Update position with smooth physics
+        p.x += p.vx
+        p.y += p.vy
+        p.vx *= 0.98
+        p.vy *= 0.98
 
-        // Damping - less damping for more flowing movement
-        particle.vx *= 0.96
-        particle.vy *= 0.96
+        // Gentle drift
+        p.vx += Math.sin(timeRef.current + i) * 0.003
+        p.vy += Math.cos(timeRef.current + i * 0.5) * 0.003
 
-        // Add slight random movement
-        particle.vx += (Math.random() - 0.5) * 0.1
-        particle.vy += (Math.random() - 0.5) * 0.1
-
-        // Wrap around edges for ambient particles
-        if (particle.maxLife > 9999) {
-          if (particle.x < -50) particle.x = width + 50
-          if (particle.x > width + 50) particle.x = -50
-          if (particle.y < -50) particle.y = height + 50
-          if (particle.y > height + 50) particle.y = -50
+        // Wrap edges
+        if (p.maxLife > 99999) {
+          if (p.x < -20) p.x = width + 20
+          if (p.x > width + 20) p.x = -20
+          if (p.y < -20) p.y = height + 20
+          if (p.y > height + 20) p.y = -20
         }
 
-        // Draw particle glow
-        const glowSize = particle.size * 4
+        // Draw particle with soft glow
+        const glowSize = p.size * 8
         const particleGradient = ctx.createRadialGradient(
-          particle.x, particle.y, 0,
-          particle.x, particle.y, glowSize
+          p.x, p.y, 0,
+          p.x, p.y, glowSize
         )
 
-        const hue = particle.hue + Math.sin(timeRef.current * 2 + i * 0.5) * 15
-        particleGradient.addColorStop(0, `hsla(${hue}, 100%, 65%, ${particle.opacity * lifeFade})`)
-        particleGradient.addColorStop(0.3, `hsla(${hue}, 100%, 55%, ${particle.opacity * 0.5 * lifeFade})`)
+        const alpha = p.opacity * fade
+        particleGradient.addColorStop(0, `rgba(16, 185, 129, ${alpha * 0.8})`)
+        particleGradient.addColorStop(0.2, `rgba(16, 185, 129, ${alpha * 0.3})`)
+        particleGradient.addColorStop(0.5, `rgba(16, 185, 129, ${alpha * 0.1})`)
         particleGradient.addColorStop(1, 'transparent')
 
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, glowSize, 0, Math.PI * 2)
+        ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2)
         ctx.fillStyle = particleGradient
         ctx.fill()
 
-        // Bright core
+        // Draw core
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size * 0.6, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${hue}, 100%, 85%, ${particle.opacity * lifeFade})`
+        ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(180, 255, 220, ${alpha})`
         ctx.fill()
 
         // Draw connections to nearby particles
         for (let j = i + 1; j < particles.length; j++) {
-          const other = particles[j]
-          const pdx = particle.x - other.x
-          const pdy = particle.y - other.y
-          const pDistance = Math.sqrt(pdx * pdx + pdy * pdy)
+          const p2 = particles[j]
+          const dx = p.x - p2.x
+          const dy = p.y - p2.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
 
-          if (pDistance < 100) {
-            const lineOpacity = (1 - pDistance / 100) * 0.4 * lifeFade
+          if (dist < 120) {
+            const fade2 = p2.maxLife < 99999 ? Math.pow(1 - p2.life / p2.maxLife, 0.5) : 1
+            const lineAlpha = (1 - dist / 120) * 0.15 * fade * fade2
 
             ctx.beginPath()
-            ctx.moveTo(particle.x, particle.y)
-            ctx.lineTo(other.x, other.y)
-            ctx.strokeStyle = `hsla(160, 100%, 55%, ${lineOpacity})`
-            ctx.lineWidth = 1.5
+            ctx.moveTo(p.x, p.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.strokeStyle = `rgba(16, 185, 129, ${lineAlpha})`
+            ctx.lineWidth = 0.5
             ctx.stroke()
           }
         }
 
         // Draw connection to cursor
-        if (distance < 200 && mouse.x > 0) {
-          const lineOpacity = (1 - distance / 200) * 0.6 * lifeFade
+        if (mouse.x > 0) {
+          const dx = mouse.x - p.x
+          const dy = mouse.y - p.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
 
-          ctx.beginPath()
-          ctx.moveTo(particle.x, particle.y)
-          ctx.lineTo(mouse.x, mouse.y)
+          if (dist < 150) {
+            const lineAlpha = (1 - dist / 150) * 0.2 * fade
 
-          const lineGradient = ctx.createLinearGradient(
-            particle.x, particle.y, mouse.x, mouse.y
-          )
-          lineGradient.addColorStop(0, `hsla(160, 100%, 55%, ${lineOpacity * 0.5})`)
-          lineGradient.addColorStop(1, `hsla(160, 100%, 70%, ${lineOpacity})`)
-
-          ctx.strokeStyle = lineGradient
-          ctx.lineWidth = 2
-          ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(p.x, p.y)
+            ctx.lineTo(mouse.x, mouse.y)
+            ctx.strokeStyle = `rgba(16, 185, 129, ${lineAlpha})`
+            ctx.lineWidth = 0.5
+            ctx.stroke()
+          }
         }
       }
 
-      // Maintain particle count
-      while (particles.length < 50) {
+      // Maintain base particle count
+      while (particles.length < 35) {
         particles.push(createParticle(
           Math.random() * width,
           Math.random() * height
         ))
-      }
-
-      // Limit max particles
-      if (particles.length > 120) {
-        particles.splice(50, particles.length - 120)
       }
 
       animationRef.current = requestAnimationFrame(animate)
@@ -327,9 +233,7 @@ export function NeonParticles() {
     return () => {
       window.removeEventListener('resize', resizeCanvas)
       window.removeEventListener('mousemove', handleMouseMove)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current)
     }
   }, [createParticle])
 
@@ -337,7 +241,7 @@ export function NeonParticles() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ background: 'transparent', zIndex: 0 }}
+      style={{ zIndex: 1 }}
     />
   )
 }
