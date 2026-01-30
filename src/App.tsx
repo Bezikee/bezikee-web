@@ -7,6 +7,9 @@ import { Services } from './pages/Services'
 import { About } from './pages/About'
 import { Work } from './pages/Work'
 import { NeonParticles } from './components/NeonParticles'
+import { CustomCursor } from './components/CustomCursor'
+import { ScrollProgress } from './components/ScrollProgress'
+import { PageTransition } from './components/PageTransition'
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
@@ -24,6 +27,12 @@ function ScrollToTop() {
 function AppContent() {
   return (
     <div className="min-h-screen bg-dark-bg font-inter relative">
+      {/* Custom Cursor */}
+      <CustomCursor />
+
+      {/* Scroll Progress Bar */}
+      <ScrollProgress />
+
       {/* Global Neon Particle Background */}
       <NeonParticles />
 
@@ -32,15 +41,17 @@ function AppContent() {
         <ScrollToTop />
         <Header />
         <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/work" element={<Work />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            {/* Catch all for 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <PageTransition>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/work" element={<Work />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              {/* Catch all for 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PageTransition>
         </main>
         <Footer />
       </div>
