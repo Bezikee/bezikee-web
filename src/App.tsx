@@ -6,6 +6,7 @@ import { Contact } from './pages/Contact'
 import { Services } from './pages/Services'
 import { About } from './pages/About'
 import { Work } from './pages/Work'
+import { NeonParticles } from './components/NeonParticles'
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
@@ -22,21 +23,27 @@ function ScrollToTop() {
 
 function AppContent() {
   return (
-    <div className="min-h-screen bg-dark-bg font-inter">
-      <ScrollToTop />
-      <Header />
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/work" element={<Work />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          {/* Catch all for 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      <Footer />
+    <div className="min-h-screen bg-dark-bg font-inter relative">
+      {/* Global Neon Particle Background */}
+      <NeonParticles />
+
+      {/* Main Content */}
+      <div className="relative z-10">
+        <ScrollToTop />
+        <Header />
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/work" element={<Work />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            {/* Catch all for 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
     </div>
   )
 }

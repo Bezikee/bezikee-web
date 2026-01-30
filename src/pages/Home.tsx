@@ -3,22 +3,15 @@ import { Globe, Smartphone, Layers, Check, ArrowRight } from 'lucide-react'
 import { CodeTypingAnimation } from '../components/CodeTypingAnimation'
 import { StatsSection } from '../components/AnimatedCounter'
 import { TechStackSection } from '../components/TechOrbit'
-import { ParticleBackground } from '../components/ParticleBackground'
 import { FadeIn, GradientText, StaggeredList } from '../components/ScrollAnimations'
 
 export function Home() {
   return (
     <div className="pt-20">
-      {/* Hero Section with Particle Background */}
+      {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center py-20 px-20 overflow-hidden">
-        {/* Particle Background */}
-        <div className="absolute inset-0 z-0">
-          <ParticleBackground />
-        </div>
-
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-dark-bg via-transparent to-dark-bg z-[1]"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-dark-bg/80 via-transparent to-dark-bg/80 z-[1]"></div>
+        {/* Gradient overlays for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/50 via-transparent to-dark-bg z-[1]"></div>
 
         <div className="max-w-7xl mx-auto w-full grid grid-cols-2 gap-16 items-center relative z-10">
           {/* Left: Text Content */}
