@@ -1,61 +1,104 @@
 import { Link } from 'react-router-dom'
 import { Globe, Smartphone, Layers, Check, ArrowRight } from 'lucide-react'
+import { CodeTypingAnimation } from '../components/CodeTypingAnimation'
+import { StatsSection } from '../components/AnimatedCounter'
+import { TechStackSection } from '../components/TechOrbit'
+import { ParticleBackground } from '../components/ParticleBackground'
+import { FadeIn, GradientText, StaggeredList } from '../components/ScrollAnimations'
 
 export function Home() {
   return (
     <div className="pt-20">
-      {/* Hero Section */}
-      <section className="flex flex-col items-center py-28 px-20 gap-10">
-        <div className="flex flex-col items-center gap-6 max-w-[900px]">
-          <div className="flex items-center gap-2 px-4 py-2 bg-neon-green/10 rounded-full border border-neon-green/20">
-            <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></div>
-            <span className="text-neon-green text-sm font-medium">Software Development Agency</span>
-          </div>
-          <h1 className="text-6xl font-bold text-white text-center leading-tight">
-            We Build Digital Products That <span className="text-neon-green">Drive Growth</span>
-          </h1>
-          <p className="text-xl text-zinc-400 text-center max-w-[700px] leading-relaxed">
-            From simple websites to complex applications, we transform your ideas into powerful digital solutions that attract customers and scale your business.
-          </p>
-          <div className="flex gap-4 mt-4">
-            <Link
-              to="/services"
-              className="px-8 py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-105 transition-all duration-300 flex items-center gap-2"
-            >
-              View Our Packages
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              to="/contact"
-              className="px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300"
-            >
-              Contact Us
-            </Link>
-          </div>
+      {/* Hero Section with Particle Background */}
+      <section className="relative min-h-[90vh] flex items-center py-20 px-20 overflow-hidden">
+        {/* Particle Background */}
+        <div className="absolute inset-0 z-0">
+          <ParticleBackground />
         </div>
 
-        {/* Trust Section */}
-        <div className="flex flex-col items-center gap-6 mt-8">
-          <span className="text-xs font-semibold text-zinc-600 tracking-widest">TRUSTED BY BUSINESSES ACROSS EUROPE</span>
-          <div className="flex gap-12 items-center">
-            {['TechStart', 'GrowthCo', 'InnovateLab', 'ScaleUp', 'DigitalFirst'].map((name) => (
-              <span key={name} className="text-lg font-semibold text-zinc-700 hover:text-neon-green transition-colors duration-300 cursor-pointer">
-                {name}
-              </span>
-            ))}
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-dark-bg via-transparent to-dark-bg z-[1]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-dark-bg/80 via-transparent to-dark-bg/80 z-[1]"></div>
+
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-2 gap-16 items-center relative z-10">
+          {/* Left: Text Content */}
+          <div className="flex flex-col gap-6">
+            <FadeIn animation="fade-right" delay={0}>
+              <div className="flex items-center gap-2 px-4 py-2 bg-neon-green/10 rounded-full border border-neon-green/20 w-fit">
+                <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></div>
+                <span className="text-neon-green text-sm font-medium">Software Development Agency</span>
+              </div>
+            </FadeIn>
+
+            <FadeIn animation="fade-right" delay={100}>
+              <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight">
+                We Build Digital Products That{' '}
+                <GradientText>Drive Growth</GradientText>
+              </h1>
+            </FadeIn>
+
+            <FadeIn animation="fade-right" delay={200}>
+              <p className="text-xl text-zinc-400 leading-relaxed">
+                From simple websites to complex applications, we transform your ideas into powerful digital solutions that attract customers and scale your business.
+              </p>
+            </FadeIn>
+
+            <FadeIn animation="fade-right" delay={300}>
+              <div className="flex gap-4 mt-4">
+                <Link
+                  to="/services"
+                  className="group px-8 py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                >
+                  View Our Packages
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </Link>
+                <Link
+                  to="/contact"
+                  className="px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300"
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </FadeIn>
+
+            {/* Trust Section */}
+            <FadeIn animation="fade-up" delay={500}>
+              <div className="flex flex-col gap-4 mt-8 pt-8 border-t border-dark-border/50">
+                <span className="text-xs font-semibold text-zinc-600 tracking-widest">TRUSTED BY BUSINESSES ACROSS EUROPE</span>
+                <div className="flex gap-8 items-center">
+                  {['TechStart', 'GrowthCo', 'InnovateLab', 'ScaleUp'].map((name) => (
+                    <span key={name} className="text-lg font-semibold text-zinc-700 hover:text-neon-green transition-colors duration-300 cursor-pointer">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
           </div>
+
+          {/* Right: Code Animation */}
+          <FadeIn animation="fade-left" delay={400}>
+            <div className="flex justify-center">
+              <CodeTypingAnimation />
+            </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* Services Preview Section */}
       <section className="py-24 px-20 bg-dark-section">
-        <div className="flex flex-col items-center gap-4 mb-16">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">OUR SERVICES</span>
-          <h2 className="text-5xl font-bold text-white text-center">What We Do Best</h2>
-          <p className="text-lg text-zinc-500 text-center">We specialize in creating digital solutions tailored to your business needs</p>
-        </div>
+        <FadeIn animation="fade-up">
+          <div className="flex flex-col items-center gap-4 mb-16">
+            <span className="text-xs font-semibold text-neon-green tracking-widest">OUR SERVICES</span>
+            <h2 className="text-5xl font-bold text-white text-center">What We Do Best</h2>
+            <p className="text-lg text-zinc-500 text-center">We specialize in creating digital solutions tailored to your business needs</p>
+          </div>
+        </FadeIn>
 
-        <div className="grid grid-cols-3 gap-6">
+        <StaggeredList
+          className="grid grid-cols-3 gap-6"
+          staggerDelay={150}
+        >
           <ServiceCard
             icon={<Globe className="w-7 h-7 text-neon-green" />}
             title="Web Development"
@@ -71,28 +114,38 @@ export function Home() {
             title="Custom Software"
             description="Bespoke software solutions designed to automate processes and solve complex business challenges."
           />
-        </div>
+        </StaggeredList>
 
-        <div className="flex justify-center mt-12">
-          <Link
-            to="/services"
-            className="px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
-          >
-            View All Services
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
+        <FadeIn animation="fade-up" delay={300}>
+          <div className="flex justify-center mt-12">
+            <Link
+              to="/services"
+              className="group px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
+            >
+              View All Services
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
+          </div>
+        </FadeIn>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-24 px-20 bg-dark-bg">
-        <div className="flex flex-col items-center gap-4 mb-16">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">PRICING</span>
-          <h2 className="text-5xl font-bold text-white text-center">Choose Your Package</h2>
-          <p className="text-lg text-zinc-500 text-center">Transparent pricing with no hidden fees. Pick the package that fits your needs.</p>
-        </div>
+      {/* Tech Stack Section */}
+      <TechStackSection />
 
-        <div className="grid grid-cols-3 gap-6 items-start">
+      {/* Pricing Section */}
+      <section className="py-24 px-20 bg-dark-section">
+        <FadeIn animation="fade-up">
+          <div className="flex flex-col items-center gap-4 mb-16">
+            <span className="text-xs font-semibold text-neon-green tracking-widest">PRICING</span>
+            <h2 className="text-5xl font-bold text-white text-center">Choose Your Package</h2>
+            <p className="text-lg text-zinc-500 text-center">Transparent pricing with no hidden fees. Pick the package that fits your needs.</p>
+          </div>
+        </FadeIn>
+
+        <StaggeredList
+          className="grid grid-cols-3 gap-6 items-start"
+          staggerDelay={150}
+        >
           <PricingCard
             name="Starter"
             price="€500"
@@ -143,33 +196,25 @@ export function Home() {
             buttonText="Contact Us"
             buttonVariant="outline"
           />
-        </div>
+        </StaggeredList>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-24 px-20 bg-dark-section">
-        <div className="flex flex-col items-center gap-4 mb-16">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">WHY BEZIKEE</span>
-          <h2 className="text-5xl font-bold text-white text-center">Built for Results</h2>
-          <p className="text-lg text-zinc-500 text-center">We don't just build websites — we build growth engines for your business</p>
-        </div>
-
-        <div className="grid grid-cols-4 gap-6">
-          <StatCard value="50+" label="Projects Delivered" />
-          <StatCard value="98%" label="Client Satisfaction" />
-          <StatCard value="5+" label="Years Experience" />
-          <StatCard value="24h" label="Response Time" />
-        </div>
-      </section>
+      {/* Animated Stats Section */}
+      <StatsSection />
 
       {/* Testimonials Section */}
       <section className="py-24 px-20 bg-dark-bg">
-        <div className="flex flex-col items-center gap-4 mb-12">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">TESTIMONIALS</span>
-          <h2 className="text-5xl font-bold text-white text-center">What Our Clients Say</h2>
-        </div>
+        <FadeIn animation="fade-up">
+          <div className="flex flex-col items-center gap-4 mb-12">
+            <span className="text-xs font-semibold text-neon-green tracking-widest">TESTIMONIALS</span>
+            <h2 className="text-5xl font-bold text-white text-center">What Our Clients Say</h2>
+          </div>
+        </FadeIn>
 
-        <div className="grid grid-cols-2 gap-6">
+        <StaggeredList
+          className="grid grid-cols-2 gap-6"
+          staggerDelay={200}
+        >
           <TestimonialCard
             quote="Bezikee transformed our online presence completely. Our new website increased leads by 300% in just 3 months. Highly recommended!"
             name="Maria García"
@@ -180,41 +225,51 @@ export function Home() {
             name="Thomas Mueller"
             role="Founder, GrowthCo"
           />
-        </div>
+        </StaggeredList>
 
-        <div className="flex justify-center mt-12">
-          <Link
-            to="/work"
-            className="px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
-          >
-            View Our Work
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
+        <FadeIn animation="fade-up" delay={400}>
+          <div className="flex justify-center mt-12">
+            <Link
+              to="/work"
+              className="group px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
+            >
+              View Our Work
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
+          </div>
+        </FadeIn>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-20 bg-neon-green">
-        <div className="flex flex-col items-center gap-6 max-w-[700px] mx-auto">
-          <h2 className="text-5xl font-bold text-white text-center">Ready to Transform Your Business?</h2>
-          <p className="text-lg text-white/90 text-center leading-relaxed">
-            Let's discuss your project and find the perfect solution for your needs. Get a free consultation today.
-          </p>
-          <div className="flex gap-4 mt-4">
-            <Link
-              to="/contact"
-              className="px-8 py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
-            >
-              Start Your Project
-            </Link>
-            <Link
-              to="/contact"
-              className="px-8 py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300"
-            >
-              Schedule a Call
-            </Link>
-          </div>
+      <section className="py-24 px-20 bg-neon-green relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
         </div>
+
+        <FadeIn animation="zoom-in">
+          <div className="flex flex-col items-center gap-6 max-w-[700px] mx-auto relative z-10">
+            <h2 className="text-5xl font-bold text-white text-center">Ready to Transform Your Business?</h2>
+            <p className="text-lg text-white/90 text-center leading-relaxed">
+              Let's discuss your project and find the perfect solution for your needs. Get a free consultation today.
+            </p>
+            <div className="flex gap-4 mt-4">
+              <Link
+                to="/contact"
+                className="px-8 py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                Start Your Project
+              </Link>
+              <Link
+                to="/contact"
+                className="px-8 py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300"
+              >
+                Schedule a Call
+              </Link>
+            </div>
+          </div>
+        </FadeIn>
       </section>
     </div>
   )
@@ -263,7 +318,7 @@ function PricingCard({
         : 'border border-dark-border shadow-neon hover:shadow-neon-lg hover:border-neon-green/50'
     }`}>
       {popular && (
-        <span className="self-start px-3 py-1.5 bg-neon-green text-white text-[11px] font-bold tracking-wider rounded-full">
+        <span className="self-start px-3 py-1.5 bg-neon-green text-white text-[11px] font-bold tracking-wider rounded-full animate-glow">
           MOST POPULAR
         </span>
       )}
@@ -301,22 +356,10 @@ function PricingCard({
   )
 }
 
-// Stat Card Component
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 p-10 bg-dark-card rounded-2xl shadow-neon hover:shadow-neon-lg hover:scale-[1.05] transition-all duration-300 cursor-pointer group">
-      <span className="text-5xl font-bold text-neon-green group-hover:drop-shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300">
-        {value}
-      </span>
-      <span className="text-zinc-400 font-medium">{label}</span>
-    </div>
-  )
-}
-
 // Testimonial Card Component
 function TestimonialCard({ quote, name, role }: { quote: string; name: string; role: string }) {
   return (
-    <div className="flex flex-col gap-6 p-8 bg-dark-card rounded-2xl shadow-neon hover:shadow-neon-lg hover:scale-[1.02] transition-all duration-300">
+    <div className="flex flex-col gap-6 p-8 bg-dark-card rounded-2xl shadow-neon hover:shadow-neon-lg hover:scale-[1.02] transition-all duration-300 border border-dark-border hover:border-neon-green/30">
       <p className="text-zinc-200 text-base leading-relaxed italic">"{quote}"</p>
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green font-bold">
