@@ -42,8 +42,11 @@ export function TechOrbit() {
 
       {/* Orbiting technologies */}
       <div
-        className={`absolute inset-0 ${isPaused ? '' : 'animate-spin-slow'}`}
-        style={{ animationDuration: '30s' }}
+        className="absolute inset-0 animate-spin-slow"
+        style={{
+          animationDuration: '30s',
+          animationPlayState: isPaused ? 'paused' : 'running'
+        }}
       >
         {technologies.map((tech) => {
           const radius = 200
@@ -65,10 +68,11 @@ export function TechOrbit() {
                   flex items-center justify-center cursor-pointer
                   transition-all duration-300 hover:scale-125 hover:z-10
                   ${hoveredTech === tech.name ? 'shadow-neon-lg border-neon-green/50 scale-125 z-10' : 'shadow-neon'}
-                  ${isPaused ? '' : 'animate-counter-spin'}
+                  animate-counter-spin
                 `}
                 style={{
                   animationDuration: '30s',
+                  animationPlayState: isPaused ? 'paused' : 'running',
                   boxShadow: hoveredTech === tech.name ? `0 0 30px ${tech.color}40` : undefined
                 }}
                 onMouseEnter={() => setHoveredTech(tech.name)}

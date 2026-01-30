@@ -8,9 +8,9 @@ export default {
     extend: {
       colors: {
         'neon-green': '#10B981',
-        'dark-bg': '#0A0A0A',
-        'dark-card': '#18181B',
-        'dark-section': '#111111',
+        'dark-bg': 'rgba(10, 10, 10, 0.85)',
+        'dark-card': 'rgba(24, 24, 27, 0.9)',
+        'dark-section': 'rgba(17, 17, 17, 0.85)',
         'dark-border': '#27272A',
       },
       boxShadow: {

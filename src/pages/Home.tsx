@@ -45,7 +45,7 @@ export function Home() {
 
             <FadeIn animation="fade-right" delay={300}>
               <div className="flex gap-4 mt-4">
-                <MagneticButton strength={0.4}>
+                <MagneticButton strength={0.1}>
                   <Link
                     to="/services"
                     className="group px-8 py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover transition-all duration-300 flex items-center gap-2"
@@ -54,7 +54,7 @@ export function Home() {
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                   </Link>
                 </MagneticButton>
-                <MagneticButton strength={0.3}>
+                <MagneticButton strength={0.15}>
                   <Link
                     to="/contact"
                     className="px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300"
@@ -131,7 +131,7 @@ export function Home() {
 
         <FadeIn animation="fade-up" delay={450}>
           <div className="flex justify-center mt-12">
-            <MagneticButton strength={0.3}>
+            <MagneticButton strength={0.15}>
               <Link
                 to="/services"
                 className="group px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
@@ -256,7 +256,7 @@ export function Home() {
 
         <FadeIn animation="fade-up" delay={400}>
           <div className="flex justify-center mt-12">
-            <MagneticButton strength={0.3}>
+            <MagneticButton strength={0.15}>
               <Link
                 to="/work"
                 className="group px-8 py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
@@ -284,7 +284,7 @@ export function Home() {
               Let's discuss your project and find the perfect solution for your needs. Get a free consultation today.
             </p>
             <div className="flex gap-4 mt-4">
-              <MagneticButton strength={0.4}>
+              <MagneticButton strength={0.1}>
                 <Link
                   to="/contact"
                   className="px-8 py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg transition-all duration-300"
@@ -292,7 +292,7 @@ export function Home() {
                   Start Your Project
                 </Link>
               </MagneticButton>
-              <MagneticButton strength={0.3}>
+              <MagneticButton strength={0.15}>
                 <Link
                   to="/contact"
                   className="px-8 py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300"
@@ -378,7 +378,7 @@ function PricingCard({
           ))}
         </div>
 
-        <MagneticButton strength={0.2} className="w-full">
+        <MagneticButton strength={0.1} className="w-full">
           <Link
             to="/contact"
             className={`w-full py-4 rounded-lg font-semibold transition-all duration-300 text-center block ${
