@@ -27,8 +27,8 @@ export function NeonParticles() {
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: fromMouse ? Math.random() * 2 + 1 : Math.random() * 1.5 + 0.5,
-      opacity: fromMouse ? 0.8 : Math.random() * 0.3 + 0.1,
+      size: fromMouse ? Math.random() * 2.5 + 1.5 : Math.random() * 2 + 1,
+      opacity: fromMouse ? 0.9 : Math.random() * 0.4 + 0.15,
       life: 0,
       maxLife: fromMouse ? 100 + Math.random() * 50 : 99999,
     }
@@ -97,8 +97,8 @@ export function NeonParticles() {
           mouse.x, mouse.y, 0,
           mouse.x, mouse.y, 80
         )
-        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.15)')
-        gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.05)')
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)')
+        gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.08)')
         gradient.addColorStop(1, 'transparent')
 
         ctx.beginPath()
@@ -155,16 +155,16 @@ export function NeonParticles() {
         }
 
         // Draw particle with soft glow
-        const glowSize = p.size * 8
+        const glowSize = p.size * 10
         const particleGradient = ctx.createRadialGradient(
           p.x, p.y, 0,
           p.x, p.y, glowSize
         )
 
         const alpha = p.opacity * fade
-        particleGradient.addColorStop(0, `rgba(16, 185, 129, ${alpha * 0.8})`)
-        particleGradient.addColorStop(0.2, `rgba(16, 185, 129, ${alpha * 0.3})`)
-        particleGradient.addColorStop(0.5, `rgba(16, 185, 129, ${alpha * 0.1})`)
+        particleGradient.addColorStop(0, `rgba(16, 185, 129, ${alpha * 0.9})`)
+        particleGradient.addColorStop(0.2, `rgba(16, 185, 129, ${alpha * 0.4})`)
+        particleGradient.addColorStop(0.5, `rgba(16, 185, 129, ${alpha * 0.15})`)
         particleGradient.addColorStop(1, 'transparent')
 
         ctx.beginPath()
