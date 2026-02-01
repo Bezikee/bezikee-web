@@ -25,10 +25,10 @@ export function TechOrbit() {
       <div className="absolute inset-0 rounded-full border border-dark-border/50 animate-pulse-slow"></div>
 
       {/* Middle orbit ring */}
-      <div className="absolute inset-12 rounded-full border border-dark-border/30"></div>
+      <div className="absolute inset-8 md:inset-12 rounded-full border border-dark-border/30"></div>
 
       {/* Inner orbit ring */}
-      <div className="absolute inset-24 rounded-full border border-neon-green/20"></div>
+      <div className="absolute inset-16 md:inset-24 rounded-full border border-neon-green/20"></div>
 
       {/* Center element */}
       <div className="absolute inset-0 flex items-center justify-center">
@@ -42,23 +42,29 @@ export function TechOrbit() {
 
       {/* Orbiting technologies */}
       <div
-        className="absolute inset-0 animate-spin-slow"
+        className="absolute inset-0"
         style={{
-          animationDuration: '30s',
+          animation: 'spin 30s linear infinite',
           animationPlayState: isPaused ? 'paused' : 'running'
         }}
       >
         {technologies.map((tech) => {
-          const angle = (tech.angle * Math.PI) / 180
+          const angleRad = (tech.angle * Math.PI) / 180
+          // Calculate position as percentage from center
+          // Radius is ~44% of container for mobile, ~40% for desktop
+          const radiusPercent = 40
+          const x = 50 + Math.cos(angleRad) * radiusPercent
+          const y = 50 + Math.sin(angleRad) * radiusPercent
 
           return (
             <div
               key={tech.name}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 orbit-item"
+              className="absolute"
               style={{
-                // Use CSS custom property for responsive radius
-                '--angle': `${tech.angle}deg`,
-              } as React.CSSProperties}
+                left: `${x}%`,
+                top: `${y}%`,
+                transform: 'translate(-50%, -50%)',
+              }}
             >
               <div
                 className={`
@@ -66,13 +72,11 @@ export function TechOrbit() {
                   flex items-center justify-center cursor-pointer
                   transition-all duration-300 hover:scale-125 hover:z-10
                   ${hoveredTech === tech.name ? 'shadow-neon-lg border-neon-green/50 scale-125 z-10' : 'shadow-neon'}
-                  animate-counter-spin
                 `}
                 style={{
-                  animationDuration: '30s',
+                  animation: 'counter-spin 30s linear infinite',
                   animationPlayState: isPaused ? 'paused' : 'running',
                   boxShadow: hoveredTech === tech.name ? `0 0 30px ${tech.color}40` : undefined,
-                  transform: `translate(calc(-50% + ${Math.cos(angle) * 110}px), calc(-50% + ${Math.sin(angle) * 110}px))`,
                 }}
                 onMouseEnter={() => setHoveredTech(tech.name)}
                 onMouseLeave={() => setHoveredTech(null)}
@@ -92,7 +96,11 @@ export function TechOrbit() {
                   text-sm font-medium whitespace-nowrap
                   transition-all duration-200
                   ${hoveredTech === tech.name ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}
-                `}>
+                `}
+                style={{
+                  animation: 'none',
+                }}
+                >
                   <span style={{ color: tech.color }}>{tech.name}</span>
                 </div>
               </div>
@@ -101,20 +109,15 @@ export function TechOrbit() {
         })}
       </div>
 
-      {/* CSS for responsive orbit radius */}
+      {/* Keyframes for animations */}
       <style>{`
-        .orbit-item > div {
-          transform: translate(calc(-50% + var(--x, 0)), calc(-50% + var(--y, 0)));
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        @media (min-width: 768px) {
-          .orbit-item > div {
-            transform: translate(calc(-50% + ${technologies.map(t => Math.cos((t.angle * Math.PI) / 180) * 160).join('px), calc(-50% + ')}px));
-          }
-        }
-        @media (min-width: 1024px) {
-          .orbit-item > div {
-            transform: translate(calc(-50% + ${technologies.map(t => Math.cos((t.angle * Math.PI) / 180) * 200).join('px), calc(-50% + ')}px));
-          }
+        @keyframes counter-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(-360deg); }
         }
       `}</style>
 

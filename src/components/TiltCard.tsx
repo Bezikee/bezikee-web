@@ -51,7 +51,7 @@ export function TiltCard({
   return (
     <div
       ref={ref}
-      className={`relative overflow-hidden ${className}`}
+      className={`relative overflow-hidden rounded-xl md:rounded-2xl ${className}`}
       style={{
         transform: transform,
         transition: isHovering ? 'transform 0.1s ease-out' : 'transform 0.4s ease-out',
@@ -65,7 +65,7 @@ export function TiltCard({
 
       {/* Glare effect */}
       <div
-        className="pointer-events-none absolute inset-0 transition-opacity duration-300"
+        className="pointer-events-none absolute inset-0 rounded-xl md:rounded-2xl transition-opacity duration-300"
         style={{
           background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(16, 185, 129, ${isHovering ? glareOpacity : 0}), transparent 50%)`,
           opacity: isHovering ? 1 : 0

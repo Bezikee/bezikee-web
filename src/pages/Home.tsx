@@ -44,7 +44,7 @@ export function Home() {
             </FadeIn>
 
             <FadeIn animation="fade-right" delay={300}>
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-2 md:mt-4">
+              <div className="flex flex-col sm:flex-row gap-4 mt-2 md:mt-4">
                 <MagneticButton strength={0.1}>
                   <Link
                     to="/services"
