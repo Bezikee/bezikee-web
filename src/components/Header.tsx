@@ -52,7 +52,7 @@ export function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="lg:hidden absolute top-16 md:top-20 left-0 right-0 z-50 bg-dark-bg/98 backdrop-blur-sm border-b border-dark-border">
+        <div className="lg:hidden absolute top-16 md:top-20 left-0 right-0 z-50 bg-dark-bg border-b border-dark-border shadow-lg">
           <nav className="flex flex-col p-4 gap-1">
             {navLinks.map((link) => (
               <Link
