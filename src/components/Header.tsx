@@ -44,7 +44,7 @@ export function Header() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="lg:hidden p-2 text-white hover:text-neon-green transition-colors"
+        className="lg:hidden p-3 -mr-2 text-white hover:text-neon-green transition-colors"
         aria-label="Toggle menu"
       >
         {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

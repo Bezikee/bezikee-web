@@ -98,24 +98,24 @@ export function Contact() {
 
             <div className="space-y-4 md:space-y-6">
               <ContactInfo
-                icon={<Mail className="w-4 md:w-5 h-4 md:h-5" />}
+                icon={<Mail className="w-5 h-5" />}
                 label="Email"
                 value="hello@bezikee.com"
                 href="mailto:hello@bezikee.com"
               />
               <ContactInfo
-                icon={<Phone className="w-4 md:w-5 h-4 md:h-5" />}
+                icon={<Phone className="w-5 h-5" />}
                 label="Phone"
                 value="+34 612 345 678"
                 href="tel:+34612345678"
               />
               <ContactInfo
-                icon={<MapPin className="w-4 md:w-5 h-4 md:h-5" />}
+                icon={<MapPin className="w-5 h-5" />}
                 label="Location"
                 value="Madrid, Spain"
               />
               <ContactInfo
-                icon={<Clock className="w-4 md:w-5 h-4 md:h-5" />}
+                icon={<Clock className="w-5 h-5" />}
                 label="Response Time"
                 value="Within 24 hours"
               />

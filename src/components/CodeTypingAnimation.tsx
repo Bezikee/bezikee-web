@@ -100,8 +100,8 @@ export function CodeTypingAnimation() {
       </div>
 
       {/* Code Area */}
-      <div className="bg-[#0d1117] border-x border-b border-dark-border rounded-b-xl p-6 min-h-[280px] overflow-hidden">
-        <pre className="font-mono text-sm leading-relaxed">
+      <div className="bg-[#0d1117] border-x border-b border-dark-border rounded-b-xl p-4 md:p-6 min-h-[200px] sm:min-h-[240px] md:min-h-[280px] overflow-hidden">
+        <pre className="font-mono text-xs sm:text-sm leading-relaxed">
           <code>
             {displayedCode.split('\n').map((line, lineIndex) => (
               <div key={lineIndex} className="flex">

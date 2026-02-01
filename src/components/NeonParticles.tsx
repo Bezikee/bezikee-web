@@ -41,8 +41,14 @@ export function NeonParticles() {
     const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) return
 
+    // Check if on mobile for performance optimization
+    const isMobile = window.innerWidth < 768
+    const particleCount = isMobile ? 20 : 35
+    const maxParticles = isMobile ? 35 : 60
+
     const resizeCanvas = () => {
-      const dpr = window.devicePixelRatio || 1
+      // Cap DPR for mobile performance
+      const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2)
       canvas.width = window.innerWidth * dpr
       canvas.height = window.innerHeight * dpr
       ctx.scale(dpr, dpr)
@@ -53,8 +59,8 @@ export function NeonParticles() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Initialize particles - fewer for cleaner look
-    particlesRef.current = Array.from({ length: 35 }, () =>
+    // Initialize particles - fewer on mobile for performance
+    particlesRef.current = Array.from({ length: particleCount }, () =>
       createParticle(
         Math.random() * window.innerWidth,
         Math.random() * window.innerHeight
@@ -68,7 +74,7 @@ export function NeonParticles() {
 
       // Spawn particles occasionally on movement
       const now = Date.now()
-      if (now - lastSpawnTime > 80 && particlesRef.current.length < 60) {
+      if (now - lastSpawnTime > 80 && particlesRef.current.length < maxParticles) {
         particlesRef.current.push(createParticle(e.clientX, e.clientY, true))
         lastSpawnTime = now
       }
@@ -218,7 +224,7 @@ export function NeonParticles() {
       }
 
       // Maintain base particle count
-      while (particles.length < 35) {
+      while (particles.length < particleCount) {
         particles.push(createParticle(
           Math.random() * width,
           Math.random() * height
