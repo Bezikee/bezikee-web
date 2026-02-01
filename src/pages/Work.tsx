@@ -66,21 +66,21 @@ const projects = [
 
 export function Work() {
   return (
-    <div className="pt-20">
+    <div className="pt-16 md:pt-20">
       {/* Hero Section */}
-      <section className="py-20 px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-semibold text-neon-green tracking-widest">OUR WORK</span>
-          <h1 className="text-5xl font-bold text-white mt-4 mb-6">Projects That Speak for Themselves</h1>
-          <p className="text-lg text-zinc-400 leading-relaxed">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Projects That Speak for Themselves</h1>
+          <p className="text-base md:text-lg text-zinc-400 leading-relaxed">
             Explore our portfolio of successful projects. Each one represents a unique challenge we helped our clients overcome.
           </p>
         </div>
       </section>
 
       {/* Projects Grid */}
-      <section className="py-20 px-20 bg-dark-bg">
-        <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 max-w-6xl mx-auto">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
@@ -88,14 +88,14 @@ export function Work() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">CLIENT FEEDBACK</span>
-            <h2 className="text-4xl font-bold text-white mt-4">What They Say About Us</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">What They Say About Us</h2>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-4 md:space-y-8">
             <TestimonialFull
               quote="Working with Bezikee was a game-changer for our business. They didn't just build us a website; they built us a lead-generating machine. The attention to detail and commitment to our success was evident in every interaction."
               name="Maria García"
@@ -113,14 +113,14 @@ export function Work() {
       </section>
 
       {/* Industries */}
-      <section className="py-20 px-20 bg-dark-bg">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">INDUSTRIES</span>
-            <h2 className="text-4xl font-bold text-white mt-4">Sectors We Serve</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Sectors We Serve</h2>
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             {[
               { name: "Technology", count: "15+ projects" },
               { name: "E-commerce", count: "12+ projects" },
@@ -133,12 +133,12 @@ export function Work() {
             ].map((industry) => (
               <div
                 key={industry.name}
-                className="p-6 bg-dark-card border border-dark-border rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300 text-center group cursor-pointer"
+                className="p-4 md:p-6 bg-dark-card border border-dark-border rounded-xl md:rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300 text-center group cursor-pointer"
               >
-                <h3 className="text-lg font-semibold text-white group-hover:text-neon-green transition-colors duration-300">
+                <h3 className="text-sm md:text-lg font-semibold text-white group-hover:text-neon-green transition-colors duration-300">
                   {industry.name}
                 </h3>
-                <p className="text-zinc-500 text-sm mt-1">{industry.count}</p>
+                <p className="text-xs md:text-sm text-zinc-500 mt-1">{industry.count}</p>
               </div>
             ))}
           </div>
@@ -146,15 +146,15 @@ export function Work() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-20 bg-neon-green">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-neon-green">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">Want to See Your Project Here?</h2>
-          <p className="text-lg text-white/90 mb-8">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 md:mb-6">Want to See Your Project Here?</h2>
+          <p className="text-base md:text-lg text-white/90 mb-6 md:mb-8">
             Let's discuss how we can help bring your vision to life and add another success story to our portfolio.
           </p>
           <Link
             to="/contact"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
           >
             Start Your Project
             <ArrowRight className="w-5 h-5" />
@@ -167,53 +167,53 @@ export function Work() {
 
 function ProjectCard({ project }: { project: typeof projects[0] }) {
   return (
-    <div className="group bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300">
+    <div className="group bg-dark-card border border-dark-border rounded-xl md:rounded-2xl overflow-hidden shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300">
       {/* Project Image/Header */}
       <div
-        className="h-48 flex items-center justify-center relative overflow-hidden"
+        className="h-32 md:h-48 flex items-center justify-center relative overflow-hidden"
         style={{ backgroundColor: `${project.color}20` }}
       >
         <div
-          className="text-6xl font-bold transition-transform duration-300 group-hover:scale-110"
+          className="text-4xl md:text-6xl font-bold transition-transform duration-300 group-hover:scale-110"
           style={{ color: project.color }}
         >
           {project.image}
         </div>
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="w-10 h-10 flex items-center justify-center bg-white/10 backdrop-blur rounded-full">
-            <ExternalLink className="w-5 h-5 text-white" />
+        <div className="absolute top-3 md:top-4 right-3 md:right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center bg-white/10 backdrop-blur rounded-full">
+            <ExternalLink className="w-4 md:w-5 h-4 md:h-5 text-white" />
           </div>
         </div>
       </div>
 
       {/* Project Info */}
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="px-3 py-1 bg-neon-green/10 text-neon-green text-xs font-medium rounded-full">
+      <div className="p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-2 md:mb-3">
+          <span className="px-2 md:px-3 py-0.5 md:py-1 bg-neon-green/10 text-neon-green text-[10px] md:text-xs font-medium rounded-full">
             {project.category}
           </span>
         </div>
-        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-neon-green transition-colors duration-300">
+        <h3 className="text-lg md:text-xl font-bold text-white mb-1 md:mb-2 group-hover:text-neon-green transition-colors duration-300">
           {project.title}
         </h3>
-        <p className="text-zinc-400 text-sm leading-relaxed mb-4">{project.description}</p>
+        <p className="text-xs md:text-sm text-zinc-400 leading-relaxed mb-3 md:mb-4">{project.description}</p>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1 md:gap-2 mb-3 md:mb-4">
           {project.tags.map((tag) => (
-            <span key={tag} className="px-2 py-1 bg-dark-bg text-zinc-400 text-xs rounded">
+            <span key={tag} className="px-1.5 md:px-2 py-0.5 md:py-1 bg-dark-bg text-zinc-400 text-[10px] md:text-xs rounded">
               {tag}
             </span>
           ))}
         </div>
 
         {/* Results */}
-        <div className="pt-4 border-t border-dark-border">
-          <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Key Results</p>
-          <ul className="space-y-1">
+        <div className="pt-3 md:pt-4 border-t border-dark-border">
+          <p className="text-[10px] md:text-xs text-zinc-500 mb-1 md:mb-2 uppercase tracking-wider">Key Results</p>
+          <ul className="space-y-0.5 md:space-y-1">
             {project.results.map((result, index) => (
-              <li key={index} className="text-sm text-zinc-300 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-neon-green rounded-full"></span>
+              <li key={index} className="text-xs md:text-sm text-zinc-300 flex items-center gap-1.5 md:gap-2">
+                <span className="w-1 md:w-1.5 h-1 md:h-1.5 bg-neon-green rounded-full flex-shrink-0"></span>
                 {result}
               </li>
             ))}
@@ -226,15 +226,15 @@ function ProjectCard({ project }: { project: typeof projects[0] }) {
 
 function TestimonialFull({ quote, name, role, company }: { quote: string; name: string; role: string; company: string }) {
   return (
-    <div className="p-8 bg-dark-card border border-dark-border rounded-2xl shadow-neon hover:shadow-neon-lg transition-all duration-300">
-      <p className="text-xl text-zinc-200 leading-relaxed italic mb-6">"{quote}"</p>
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green text-xl font-bold">
+    <div className="p-5 md:p-8 bg-dark-card border border-dark-border rounded-xl md:rounded-2xl shadow-neon hover:shadow-neon-lg transition-all duration-300">
+      <p className="text-base md:text-xl text-zinc-200 leading-relaxed italic mb-4 md:mb-6">"{quote}"</p>
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="w-10 md:w-14 h-10 md:h-14 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green text-lg md:text-xl font-bold">
           {name.charAt(0)}
         </div>
         <div>
-          <p className="text-white font-semibold">{name}</p>
-          <p className="text-zinc-500">{role}, {company}</p>
+          <p className="text-sm md:text-base text-white font-semibold">{name}</p>
+          <p className="text-xs md:text-sm text-zinc-500">{role}, {company}</p>
         </div>
       </div>
     </div>

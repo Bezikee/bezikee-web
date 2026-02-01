@@ -3,23 +3,23 @@ import { Globe, Smartphone, Layers, Palette, Server, Shield, Check, ArrowRight }
 
 export function Services() {
   return (
-    <div className="pt-20">
+    <div className="pt-16 md:pt-20">
       {/* Hero Section */}
-      <section className="py-20 px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-semibold text-neon-green tracking-widest">OUR SERVICES</span>
-          <h1 className="text-5xl font-bold text-white mt-4 mb-6">Digital Solutions for Every Business Need</h1>
-          <p className="text-lg text-zinc-400 leading-relaxed">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Digital Solutions for Every Business Need</h1>
+          <p className="text-base md:text-lg text-zinc-400 leading-relaxed">
             From concept to launch, we provide end-to-end development services that help businesses thrive in the digital age.
           </p>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="py-20 px-20 bg-dark-bg">
-        <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 max-w-6xl mx-auto">
           <ServiceDetail
-            icon={<Globe className="w-8 h-8" />}
+            icon={<Globe className="w-7 md:w-8 h-7 md:h-8" />}
             title="Web Development"
             description="We build fast, responsive, and SEO-optimized websites that convert visitors into customers."
             features={[
@@ -32,7 +32,7 @@ export function Services() {
             ]}
           />
           <ServiceDetail
-            icon={<Smartphone className="w-8 h-8" />}
+            icon={<Smartphone className="w-7 md:w-8 h-7 md:h-8" />}
             title="Mobile App Development"
             description="Native and cross-platform mobile applications that provide exceptional user experiences."
             features={[
@@ -45,7 +45,7 @@ export function Services() {
             ]}
           />
           <ServiceDetail
-            icon={<Layers className="w-8 h-8" />}
+            icon={<Layers className="w-7 md:w-8 h-7 md:h-8" />}
             title="Custom Software"
             description="Bespoke software solutions designed to streamline your operations and solve complex challenges."
             features={[
@@ -58,7 +58,7 @@ export function Services() {
             ]}
           />
           <ServiceDetail
-            icon={<Palette className="w-8 h-8" />}
+            icon={<Palette className="w-7 md:w-8 h-7 md:h-8" />}
             title="UI/UX Design"
             description="Beautiful, intuitive designs that delight users and drive engagement."
             features={[
@@ -71,7 +71,7 @@ export function Services() {
             ]}
           />
           <ServiceDetail
-            icon={<Server className="w-8 h-8" />}
+            icon={<Server className="w-7 md:w-8 h-7 md:h-8" />}
             title="Backend Development"
             description="Robust, scalable backend systems that power your applications reliably."
             features={[
@@ -84,7 +84,7 @@ export function Services() {
             ]}
           />
           <ServiceDetail
-            icon={<Shield className="w-8 h-8" />}
+            icon={<Shield className="w-7 md:w-8 h-7 md:h-8" />}
             title="Consulting & Strategy"
             description="Expert guidance to help you make informed technology decisions."
             features={[
@@ -100,11 +100,11 @@ export function Services() {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">OUR PROCESS</span>
-            <h2 className="text-4xl font-bold text-white mt-4">How We Work</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">How We Work</h2>
           </div>
 
           <div className="space-y-0">
@@ -143,14 +143,14 @@ export function Services() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-20 bg-dark-bg">
-        <div className="text-center mb-16">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
+        <div className="text-center mb-10 md:mb-16">
           <span className="text-xs font-semibold text-neon-green tracking-widest">PRICING</span>
-          <h2 className="text-4xl font-bold text-white mt-4">Transparent Pricing</h2>
-          <p className="text-lg text-zinc-500 mt-4">Choose the package that fits your needs</p>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Transparent Pricing</h2>
+          <p className="text-base md:text-lg text-zinc-500 mt-4">Choose the package that fits your needs</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
           <PricingCard
             name="Starter"
             price="€500"
@@ -174,15 +174,15 @@ export function Services() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-20 bg-neon-green">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-neon-green">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">Ready to Start Your Project?</h2>
-          <p className="text-lg text-white/90 mb-8">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 md:mb-6">Ready to Start Your Project?</h2>
+          <p className="text-base md:text-lg text-white/90 mb-6 md:mb-8">
             Let's discuss how we can help bring your vision to life.
           </p>
           <Link
             to="/contact"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
           >
             Get a Free Quote
             <ArrowRight className="w-5 h-5" />
@@ -205,16 +205,16 @@ function ServiceDetail({
   features: string[]
 }) {
   return (
-    <div className="p-8 bg-dark-card border border-dark-border rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300 group">
-      <div className="w-16 h-16 flex items-center justify-center bg-neon-green/10 rounded-2xl text-neon-green mb-6 group-hover:bg-neon-green/20 transition-colors duration-300">
+    <div className="p-5 md:p-8 bg-dark-card border border-dark-border rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300 group">
+      <div className="w-12 md:w-16 h-12 md:h-16 flex items-center justify-center bg-neon-green/10 rounded-xl md:rounded-2xl text-neon-green mb-4 md:mb-6 group-hover:bg-neon-green/20 transition-colors duration-300">
         {icon}
       </div>
-      <h3 className="text-2xl font-bold text-white mb-3">{title}</h3>
-      <p className="text-zinc-400 leading-relaxed mb-6">{description}</p>
-      <ul className="space-y-3">
+      <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">{title}</h3>
+      <p className="text-sm md:text-base text-zinc-400 leading-relaxed mb-4 md:mb-6">{description}</p>
+      <ul className="space-y-2 md:space-y-3">
         {features.map((feature, index) => (
-          <li key={index} className="flex items-center gap-3 text-zinc-300">
-            <Check className="w-5 h-5 text-neon-green flex-shrink-0" />
+          <li key={index} className="flex items-center gap-2 md:gap-3 text-sm md:text-base text-zinc-300">
+            <Check className="w-4 md:w-5 h-4 md:h-5 text-neon-green flex-shrink-0" />
             {feature}
           </li>
         ))}
@@ -225,16 +225,16 @@ function ServiceDetail({
 
 function ProcessStep({ number, title, description }: { number: string; title: string; description: string }) {
   return (
-    <div className="flex gap-8 pb-12 relative group">
+    <div className="flex gap-4 md:gap-8 pb-8 md:pb-12 relative group">
       <div className="flex flex-col items-center">
-        <div className="w-16 h-16 flex items-center justify-center bg-neon-green/10 rounded-2xl text-neon-green font-bold text-xl border border-neon-green/30 group-hover:bg-neon-green/20 group-hover:shadow-neon transition-all duration-300">
+        <div className="w-12 md:w-16 h-12 md:h-16 flex items-center justify-center bg-neon-green/10 rounded-xl md:rounded-2xl text-neon-green font-bold text-lg md:text-xl border border-neon-green/30 group-hover:bg-neon-green/20 group-hover:shadow-neon transition-all duration-300">
           {number}
         </div>
         <div className="w-0.5 h-full bg-dark-border mt-4 group-last:hidden"></div>
       </div>
-      <div className="pt-3">
-        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-neon-green transition-colors duration-300">{title}</h3>
-        <p className="text-zinc-400 leading-relaxed">{description}</p>
+      <div className="pt-2 md:pt-3 flex-1">
+        <h3 className="text-lg md:text-xl font-bold text-white mb-1 md:mb-2 group-hover:text-neon-green transition-colors duration-300">{title}</h3>
+        <p className="text-sm md:text-base text-zinc-400 leading-relaxed">{description}</p>
       </div>
     </div>
   )
@@ -254,7 +254,7 @@ function PricingCard({
   popular?: boolean
 }) {
   return (
-    <div className={`p-8 rounded-2xl transition-all duration-300 hover:scale-[1.03] ${
+    <div className={`p-5 md:p-8 rounded-2xl transition-all duration-300 hover:scale-[1.03] ${
       popular
         ? 'bg-dark-card border-2 border-neon-green shadow-neon-md hover:shadow-neon-xl'
         : 'bg-dark-card border border-dark-border shadow-neon hover:shadow-neon-lg'
@@ -264,20 +264,20 @@ function PricingCard({
           MOST POPULAR
         </span>
       )}
-      <h3 className="text-xl font-bold text-white">{name}</h3>
-      <p className="text-4xl font-bold text-white mt-2">{price}</p>
-      <p className="text-zinc-500 mt-2 mb-6">{description}</p>
-      <ul className="space-y-3 mb-8">
+      <h3 className="text-lg md:text-xl font-bold text-white">{name}</h3>
+      <p className="text-3xl md:text-4xl font-bold text-white mt-2">{price}</p>
+      <p className="text-sm md:text-base text-zinc-500 mt-2 mb-4 md:mb-6">{description}</p>
+      <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8">
         {features.map((feature, index) => (
-          <li key={index} className="flex items-center gap-2 text-sm text-zinc-300">
-            <Check className="w-4 h-4 text-neon-green" />
+          <li key={index} className="flex items-center gap-2 text-xs md:text-sm text-zinc-300">
+            <Check className="w-4 h-4 text-neon-green flex-shrink-0" />
             {feature}
           </li>
         ))}
       </ul>
       <Link
         to="/contact"
-        className={`block w-full py-3 text-center rounded-lg font-semibold transition-all duration-300 ${
+        className={`block w-full py-3 text-center rounded-lg font-semibold transition-all duration-300 text-sm md:text-base ${
           popular
             ? 'bg-neon-green text-white shadow-neon-btn hover:shadow-neon-btn-hover'
             : 'border border-dark-border text-white hover:border-neon-green hover:shadow-neon'

@@ -48,13 +48,13 @@ export function Contact() {
 
   if (isSubmitted) {
     return (
-      <div className="pt-20 min-h-screen flex items-center justify-center px-20">
+      <div className="pt-16 md:pt-20 min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-12 lg:px-20">
         <div className="max-w-lg text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-neon-green/20 flex items-center justify-center animate-pulse">
-            <CheckCircle className="w-10 h-10 text-neon-green" />
+          <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 rounded-full bg-neon-green/20 flex items-center justify-center animate-pulse">
+            <CheckCircle className="w-8 md:w-10 h-8 md:h-10 text-neon-green" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">Message Sent!</h1>
-          <p className="text-lg text-zinc-400 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Message Sent!</h1>
+          <p className="text-base md:text-lg text-zinc-400 mb-6 md:mb-8">
             Thank you for reaching out! We've received your message and will get back to you within 24 hours.
           </p>
           <button
@@ -62,7 +62,7 @@ export function Contact() {
               setIsSubmitted(false)
               setFormData({ name: '', email: '', company: '', phone: '', service: '', budget: '', message: '' })
             }}
-            className="px-8 py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-105 transition-all duration-300"
+            className="px-6 md:px-8 py-3 md:py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-105 transition-all duration-300"
           >
             Send Another Message
           </button>
@@ -72,58 +72,58 @@ export function Contact() {
   }
 
   return (
-    <div className="pt-20">
+    <div className="pt-16 md:pt-20">
       {/* Hero Section */}
-      <section className="py-20 px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-semibold text-neon-green tracking-widest">GET IN TOUCH</span>
-          <h1 className="text-5xl font-bold text-white mt-4 mb-6">Let's Build Something Amazing Together</h1>
-          <p className="text-lg text-zinc-400 leading-relaxed">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Let's Build Something Amazing Together</h1>
+          <p className="text-base md:text-lg text-zinc-400 leading-relaxed">
             Have a project in mind? We'd love to hear about it. Fill out the form below and we'll get back to you within 24 hours.
           </p>
         </div>
       </section>
 
       {/* Contact Form & Info Section */}
-      <section className="py-20 px-20 bg-dark-bg">
-        <div className="grid grid-cols-3 gap-12 max-w-7xl mx-auto">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-12 max-w-7xl mx-auto">
           {/* Contact Info */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8 lg:order-1 order-2">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-6">Contact Information</h2>
-              <p className="text-zinc-400 leading-relaxed">
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Contact Information</h2>
+              <p className="text-sm md:text-base text-zinc-400 leading-relaxed">
                 Ready to start your project? Get in touch with us through any of these channels.
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <ContactInfo
-                icon={<Mail className="w-5 h-5" />}
+                icon={<Mail className="w-4 md:w-5 h-4 md:h-5" />}
                 label="Email"
                 value="hello@bezikee.com"
                 href="mailto:hello@bezikee.com"
               />
               <ContactInfo
-                icon={<Phone className="w-5 h-5" />}
+                icon={<Phone className="w-4 md:w-5 h-4 md:h-5" />}
                 label="Phone"
                 value="+34 612 345 678"
                 href="tel:+34612345678"
               />
               <ContactInfo
-                icon={<MapPin className="w-5 h-5" />}
+                icon={<MapPin className="w-4 md:w-5 h-4 md:h-5" />}
                 label="Location"
                 value="Madrid, Spain"
               />
               <ContactInfo
-                icon={<Clock className="w-5 h-5" />}
+                icon={<Clock className="w-4 md:w-5 h-4 md:h-5" />}
                 label="Response Time"
                 value="Within 24 hours"
               />
             </div>
 
-            <div className="p-6 bg-dark-card rounded-2xl border border-dark-border shadow-neon">
-              <h3 className="text-lg font-semibold text-white mb-3">Office Hours</h3>
-              <div className="space-y-2 text-sm text-zinc-400">
+            <div className="p-4 md:p-6 bg-dark-card rounded-xl md:rounded-2xl border border-dark-border shadow-neon">
+              <h3 className="text-base md:text-lg font-semibold text-white mb-2 md:mb-3">Office Hours</h3>
+              <div className="space-y-1 md:space-y-2 text-xs md:text-sm text-zinc-400">
                 <p>Monday - Friday: 9:00 AM - 6:00 PM (CET)</p>
                 <p>Saturday: 10:00 AM - 2:00 PM (CET)</p>
                 <p>Sunday: Closed</p>
@@ -132,11 +132,11 @@ export function Contact() {
           </div>
 
           {/* Contact Form */}
-          <div className="col-span-2">
-            <form onSubmit={handleSubmit} className="p-8 bg-dark-card rounded-2xl border border-dark-border shadow-neon">
-              <h2 className="text-2xl font-bold text-white mb-8">Send Us a Message</h2>
+          <div className="lg:col-span-2 lg:order-2 order-1">
+            <form onSubmit={handleSubmit} className="p-5 md:p-8 bg-dark-card rounded-xl md:rounded-2xl border border-dark-border shadow-neon">
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">Send Us a Message</h2>
 
-              <div className="grid grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                 <FormInput
                   label="Full Name"
                   name="name"
@@ -175,7 +175,7 @@ export function Contact() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                 <FormSelect
                   label="Service Interested In"
                   name="service"
@@ -207,8 +207,8 @@ export function Contact() {
                 />
               </div>
 
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <div className="mb-6 md:mb-8">
+                <label className="block text-xs md:text-sm font-medium text-zinc-300 mb-1.5 md:mb-2">
                   Project Details <span className="text-neon-green">*</span>
                 </label>
                 <textarea
@@ -217,32 +217,32 @@ export function Contact() {
                   onChange={handleChange}
                   placeholder="Tell us about your project, goals, and timeline..."
                   rows={5}
-                  className={`w-full px-4 py-3 bg-dark-bg border rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 resize-none ${
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 bg-dark-bg border rounded-lg text-sm md:text-base text-white placeholder-zinc-600 focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 resize-none ${
                     errors.message ? 'border-red-500' : 'border-dark-border'
                   }`}
                 />
-                {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message}</p>}
+                {errors.message && <p className="mt-1 text-xs md:text-sm text-red-500">{errors.message}</p>}
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full py-3 md:py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm md:text-base"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 md:w-5 h-4 md:h-5 animate-spin" />
                     Sending...
                   </>
                 ) : (
                   <>
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 md:w-5 h-4 md:h-5" />
                     Send Message
                   </>
                 )}
               </button>
 
-              <p className="mt-4 text-sm text-zinc-500 text-center">
+              <p className="mt-3 md:mt-4 text-xs md:text-sm text-zinc-500 text-center">
                 By submitting this form, you agree to our Privacy Policy and Terms of Service.
               </p>
             </form>
@@ -251,14 +251,14 @@ export function Contact() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 md:mb-12">
             <span className="text-xs font-semibold text-neon-green tracking-widest">FAQ</span>
-            <h2 className="text-4xl font-bold text-white mt-4">Frequently Asked Questions</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Frequently Asked Questions</h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <FAQItem
               question="How long does a typical project take?"
               answer="Project timelines vary based on complexity. A simple website takes 2-4 weeks, while custom applications can take 2-6 months. We'll provide a detailed timeline during our initial consultation."
@@ -284,13 +284,13 @@ export function Contact() {
 
 function ContactInfo({ icon, label, value, href }: { icon: React.ReactNode; label: string; value: string; href?: string }) {
   const content = (
-    <div className="flex items-start gap-4 group cursor-pointer">
-      <div className="w-12 h-12 flex items-center justify-center bg-neon-green/10 rounded-xl text-neon-green group-hover:bg-neon-green/20 transition-colors duration-300">
+    <div className="flex items-start gap-3 md:gap-4 group cursor-pointer">
+      <div className="w-10 md:w-12 h-10 md:h-12 flex items-center justify-center bg-neon-green/10 rounded-lg md:rounded-xl text-neon-green group-hover:bg-neon-green/20 transition-colors duration-300">
         {icon}
       </div>
       <div>
-        <p className="text-sm text-zinc-500">{label}</p>
-        <p className="text-white font-medium group-hover:text-neon-green transition-colors duration-300">{value}</p>
+        <p className="text-xs md:text-sm text-zinc-500">{label}</p>
+        <p className="text-sm md:text-base text-white font-medium group-hover:text-neon-green transition-colors duration-300">{value}</p>
       </div>
     </div>
   )
@@ -322,7 +322,7 @@ function FormInput({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-zinc-300 mb-2">
+      <label className="block text-xs md:text-sm font-medium text-zinc-300 mb-1.5 md:mb-2">
         {label} {required && <span className="text-neon-green">*</span>}
       </label>
       <input
@@ -331,11 +331,11 @@ function FormInput({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full px-4 py-3 bg-dark-bg border rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 ${
+        className={`w-full px-3 md:px-4 py-2.5 md:py-3 bg-dark-bg border rounded-lg text-sm md:text-base text-white placeholder-zinc-600 focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 ${
           error ? 'border-red-500' : 'border-dark-border'
         }`}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs md:text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -355,12 +355,12 @@ function FormSelect({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-zinc-300 mb-2">{label}</label>
+      <label className="block text-xs md:text-sm font-medium text-zinc-300 mb-1.5 md:mb-2">{label}</label>
       <select
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 appearance-none cursor-pointer"
+        className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-dark-bg border border-dark-border rounded-lg text-sm md:text-base text-white focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 appearance-none cursor-pointer"
       >
         {options.map(option => (
           <option key={option.value} value={option.value}>{option.label}</option>
@@ -375,19 +375,19 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
   return (
     <div
-      className={`p-6 bg-dark-card rounded-2xl border transition-all duration-300 cursor-pointer ${
+      className={`p-4 md:p-6 bg-dark-card rounded-xl md:rounded-2xl border transition-all duration-300 cursor-pointer ${
         isOpen ? 'border-neon-green shadow-neon' : 'border-dark-border hover:border-neon-green/50'
       }`}
       onClick={() => setIsOpen(!isOpen)}
     >
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">{question}</h3>
-        <span className={`text-neon-green transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="text-sm md:text-lg font-semibold text-white">{question}</h3>
+        <span className={`text-neon-green transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
           ▼
         </span>
       </div>
       {isOpen && (
-        <p className="mt-4 text-zinc-400 leading-relaxed">{answer}</p>
+        <p className="mt-3 md:mt-4 text-sm md:text-base text-zinc-400 leading-relaxed">{answer}</p>
       )}
     </div>
   )

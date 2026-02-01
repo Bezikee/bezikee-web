@@ -17,7 +17,7 @@ export function TechOrbit() {
 
   return (
     <div
-      className="relative w-[500px] h-[500px]"
+      className="relative w-[280px] h-[280px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -32,10 +32,10 @@ export function TechOrbit() {
 
       {/* Center element */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-neon-green/20 to-emerald-600/20 border border-neon-green/50 flex items-center justify-center shadow-neon-lg backdrop-blur-sm">
+        <div className="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-neon-green/20 to-emerald-600/20 border border-neon-green/50 flex items-center justify-center shadow-neon-lg backdrop-blur-sm">
           <div className="text-center">
-            <div className="text-neon-green font-bold text-lg">bezikee</div>
-            <div className="text-zinc-500 text-xs mt-1">tech stack</div>
+            <div className="text-neon-green font-bold text-sm md:text-base lg:text-lg">bezikee</div>
+            <div className="text-zinc-500 text-[10px] md:text-xs mt-0.5 md:mt-1">tech stack</div>
           </div>
         </div>
       </div>
@@ -49,22 +49,20 @@ export function TechOrbit() {
         }}
       >
         {technologies.map((tech) => {
-          const radius = 200
           const angle = (tech.angle * Math.PI) / 180
-          const x = Math.cos(angle) * radius
-          const y = Math.sin(angle) * radius
 
           return (
             <div
               key={tech.name}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 orbit-item"
               style={{
-                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-              }}
+                // Use CSS custom property for responsive radius
+                '--angle': `${tech.angle}deg`,
+              } as React.CSSProperties}
             >
               <div
                 className={`
-                  group relative w-16 h-16 rounded-xl bg-dark-card border border-dark-border
+                  group relative w-10 h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-lg md:rounded-xl bg-dark-card border border-dark-border
                   flex items-center justify-center cursor-pointer
                   transition-all duration-300 hover:scale-125 hover:z-10
                   ${hoveredTech === tech.name ? 'shadow-neon-lg border-neon-green/50 scale-125 z-10' : 'shadow-neon'}
@@ -73,22 +71,23 @@ export function TechOrbit() {
                 style={{
                   animationDuration: '30s',
                   animationPlayState: isPaused ? 'paused' : 'running',
-                  boxShadow: hoveredTech === tech.name ? `0 0 30px ${tech.color}40` : undefined
+                  boxShadow: hoveredTech === tech.name ? `0 0 30px ${tech.color}40` : undefined,
+                  transform: `translate(calc(-50% + ${Math.cos(angle) * 110}px), calc(-50% + ${Math.sin(angle) * 110}px))`,
                 }}
                 onMouseEnter={() => setHoveredTech(tech.name)}
                 onMouseLeave={() => setHoveredTech(null)}
               >
                 {/* Tech icon placeholder with first letters */}
                 <span
-                  className="font-bold text-lg transition-all duration-300"
+                  className="font-bold text-xs md:text-base lg:text-lg transition-all duration-300"
                   style={{ color: tech.color }}
                 >
                   {tech.name.slice(0, 2)}
                 </span>
 
-                {/* Tooltip */}
+                {/* Tooltip - hidden on mobile */}
                 <div className={`
-                  absolute -bottom-10 left-1/2 -translate-x-1/2
+                  hidden md:block absolute -bottom-10 left-1/2 -translate-x-1/2
                   px-3 py-1 bg-dark-bg border border-dark-border rounded-lg
                   text-sm font-medium whitespace-nowrap
                   transition-all duration-200
@@ -101,6 +100,23 @@ export function TechOrbit() {
           )
         })}
       </div>
+
+      {/* CSS for responsive orbit radius */}
+      <style>{`
+        .orbit-item > div {
+          transform: translate(calc(-50% + var(--x, 0)), calc(-50% + var(--y, 0)));
+        }
+        @media (min-width: 768px) {
+          .orbit-item > div {
+            transform: translate(calc(-50% + ${technologies.map(t => Math.cos((t.angle * Math.PI) / 180) * 160).join('px), calc(-50% + ')}px));
+          }
+        }
+        @media (min-width: 1024px) {
+          .orbit-item > div {
+            transform: translate(calc(-50% + ${technologies.map(t => Math.cos((t.angle * Math.PI) / 180) * 200).join('px), calc(-50% + ')}px));
+          }
+        }
+      `}</style>
 
       {/* Decorative particles */}
       {[...Array(20)].map((_, i) => (
@@ -121,36 +137,36 @@ export function TechOrbit() {
 
 export function TechStackSection() {
   return (
-    <section className="py-20 px-20 bg-dark-bg relative overflow-hidden">
+    <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 gap-16 items-center">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+          <div className="order-2 lg:order-1">
             <span className="text-xs font-semibold text-neon-green tracking-widest">TECHNOLOGY</span>
-            <h2 className="text-4xl font-bold text-white mt-4 mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4 mb-4 md:mb-6">
               Cutting-Edge Tech Stack
             </h2>
-            <p className="text-zinc-400 leading-relaxed mb-8">
+            <p className="text-sm md:text-base text-zinc-400 leading-relaxed mb-6 md:mb-8">
               We leverage the latest and most powerful technologies to build fast, scalable,
               and maintainable applications. Our expertise spans the entire modern web ecosystem.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {[
                 { label: 'Frontend', techs: 'React, Next.js, Vue, TypeScript' },
                 { label: 'Backend', techs: 'Node.js, Python, Go, PostgreSQL' },
                 { label: 'Cloud', techs: 'AWS, Vercel, Docker, Kubernetes' },
                 { label: 'Mobile', techs: 'React Native, Flutter, Swift' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center gap-4">
-                  <div className="w-2 h-2 bg-neon-green rounded-full"></div>
-                  <span className="text-white font-medium w-24">{item.label}</span>
-                  <span className="text-zinc-500">{item.techs}</span>
+                <div key={item.label} className="flex items-start md:items-center gap-3 md:gap-4">
+                  <div className="w-2 h-2 bg-neon-green rounded-full mt-2 md:mt-0 flex-shrink-0"></div>
+                  <span className="text-white font-medium w-20 md:w-24 text-sm md:text-base">{item.label}</span>
+                  <span className="text-zinc-500 text-sm md:text-base">{item.techs}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center order-1 lg:order-2">
             <TechOrbit />
           </div>
         </div>

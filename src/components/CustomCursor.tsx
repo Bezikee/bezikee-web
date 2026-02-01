@@ -45,9 +45,9 @@ export function CustomCursor() {
 
   return (
     <>
-      {/* Main cursor dot */}
+      {/* Main cursor dot - hidden on touch devices */}
       <div
-        className="fixed pointer-events-none z-[9999] mix-blend-screen"
+        className="fixed pointer-events-none z-[9999] mix-blend-screen hidden md:block"
         style={{
           left: position.x,
           top: position.y,
@@ -82,10 +82,12 @@ export function CustomCursor() {
         />
       </div>
 
-      {/* Hide default cursor */}
+      {/* Hide default cursor - only on non-touch devices */}
       <style>{`
-        * {
-          cursor: none !important;
+        @media (hover: hover) and (pointer: fine) {
+          * {
+            cursor: none !important;
+          }
         }
       `}</style>
     </>

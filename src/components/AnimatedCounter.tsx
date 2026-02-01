@@ -71,19 +71,19 @@ export function AnimatedCounter({
   return (
     <div
       ref={ref}
-      className="group p-8 bg-dark-card border border-dark-border rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-500 text-center relative overflow-hidden"
+      className="group p-4 md:p-8 bg-dark-card border border-dark-border rounded-xl md:rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-500 text-center relative overflow-hidden"
     >
       {/* Background glow on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
       {/* Content */}
       <div className="relative z-10">
-        <div className="text-5xl font-bold text-neon-green mb-2 tabular-nums group-hover:drop-shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all duration-500">
+        <div className="text-3xl md:text-5xl font-bold text-neon-green mb-1 md:mb-2 tabular-nums group-hover:drop-shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all duration-500">
           {prefix}
           {displayValue}
           {suffix}
         </div>
-        <div className="text-zinc-400 font-medium">{label}</div>
+        <div className="text-xs md:text-base text-zinc-400 font-medium">{label}</div>
       </div>
 
       {/* Animated border gradient */}
@@ -96,20 +96,20 @@ export function AnimatedCounter({
 
 export function StatsSection() {
   return (
-    <section className="py-20 px-20 bg-dark-section relative overflow-hidden">
+    <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.1),transparent_70%)]"></div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10 md:mb-16">
           <span className="text-xs font-semibold text-neon-green tracking-widest">BY THE NUMBERS</span>
-          <h2 className="text-4xl font-bold text-white mt-4">Results That Speak Volumes</h2>
-          <p className="text-zinc-400 mt-4 max-w-2xl mx-auto">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Results That Speak Volumes</h2>
+          <p className="text-sm md:text-base text-zinc-400 mt-4 max-w-2xl mx-auto">
             We don't just build websites—we build success stories. Here's the proof.
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           <AnimatedCounter
             end={50}
             suffix="+"
