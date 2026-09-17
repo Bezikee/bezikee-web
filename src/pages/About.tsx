@@ -11,34 +11,26 @@ export function About() {
           <span className="text-xs font-semibold text-neon-green tracking-widest">ABOUT US</span>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">We're a Team of Digital Craftspeople</h1>
           <p className="text-base md:text-lg text-zinc-400 leading-relaxed">
-            Founded in 2019, Bezikee has grown from a small freelance operation to a full-service digital agency helping businesses across Europe achieve their digital goals.
+            Bezikee is a new software development agency built on a simple idea: every business deserves digital products that are well designed, well built and actually help it grow.
           </p>
         </div>
       </section>
 
       {/* Story Section */}
       <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center max-w-6xl mx-auto">
-          <div>
-            <span className="text-xs font-semibold text-neon-green tracking-widest">OUR STORY</span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4 mb-4 md:mb-6">From Passion to Purpose</h2>
-            <div className="space-y-3 md:space-y-4 text-sm md:text-base text-zinc-400 leading-relaxed">
-              <p>
-                Bezikee started with a simple belief: every business deserves access to high-quality digital solutions, regardless of size or budget.
-              </p>
-              <p>
-                Our founder, after years of working with enterprise clients, noticed that small and medium businesses were often priced out of professional web development. That's when Bezikee was born.
-              </p>
-              <p>
-                Today, we've helped over 50 businesses establish their digital presence, from local startups to international companies. Our team has grown, but our mission remains the same: deliver exceptional digital products that drive real business results.
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
-            <StatBox value="50+" label="Projects Completed" />
-            <StatBox value="5+" label="Years Experience" />
-            <StatBox value="98%" label="Client Satisfaction" />
-            <StatBox value="12" label="Countries Served" />
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="text-xs font-semibold text-neon-green tracking-widest">OUR STORY</span>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4 mb-4 md:mb-6">From Passion to Purpose</h2>
+          <div className="space-y-3 md:space-y-4 text-sm md:text-base text-zinc-400 leading-relaxed">
+            <p>
+              Bezikee started with a simple belief: every business deserves access to high-quality digital solutions, regardless of size or budget.
+            </p>
+            <p>
+              Too often, small and medium businesses are priced out of professional development or handed a template that doesn't fit how they work. We started Bezikee to close that gap.
+            </p>
+            <p>
+              We're just getting started, and our first clients get the most out of it: our full attention on every project, clear pricing agreed upfront, and a team determined to prove what it can build.
+            </p>
           </div>
         </div>
       </section>
@@ -71,41 +63,8 @@ export function About() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10 md:mb-16">
-            <span className="text-xs font-semibold text-neon-green tracking-widest">OUR TEAM</span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Meet the People Behind Bezikee</h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-            <TeamMember
-              name="Carlos Rodríguez"
-              role="Founder & Lead Developer"
-              initials="CR"
-            />
-            <TeamMember
-              name="Elena Martínez"
-              role="UI/UX Designer"
-              initials="EM"
-            />
-            <TeamMember
-              name="David Fernández"
-              role="Full Stack Developer"
-              initials="DF"
-            />
-            <TeamMember
-              name="Ana García"
-              role="Project Manager"
-              initials="AG"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Why Us Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">WHY CHOOSE US</span>
@@ -131,7 +90,7 @@ export function About() {
             <FeatureItem
               icon={<Zap className="w-5 md:w-6 h-5 md:h-6" />}
               title="Fast Turnaround"
-              description="Our streamlined processes mean you get your project delivered on time, every time."
+              description="Clear milestones and realistic timelines agreed before we start, so you always know when to expect delivery."
             />
           </div>
         </div>
@@ -147,17 +106,6 @@ export function About() {
   )
 }
 
-function StatBox({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="p-4 md:p-8 bg-dark-card border border-dark-border rounded-xl md:rounded-2xl shadow-neon hover:shadow-neon-lg transition-all duration-300 text-center group">
-      <div className="text-2xl md:text-4xl font-bold text-neon-green mb-1 md:mb-2 group-hover:drop-shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-300">
-        {value}
-      </div>
-      <div className="text-xs md:text-base text-zinc-400">{label}</div>
-    </div>
-  )
-}
-
 function ValueCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="p-5 md:p-8 bg-dark-card border border-dark-border rounded-xl md:rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300 group">
@@ -166,18 +114,6 @@ function ValueCard({ icon, title, description }: { icon: React.ReactNode; title:
       </div>
       <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">{title}</h3>
       <p className="text-sm md:text-base text-zinc-400 leading-relaxed">{description}</p>
-    </div>
-  )
-}
-
-function TeamMember({ name, role, initials }: { name: string; role: string; initials: string }) {
-  return (
-    <div className="p-4 md:p-6 bg-dark-card border border-dark-border rounded-xl md:rounded-2xl shadow-neon hover:shadow-neon-lg hover:scale-[1.03] transition-all duration-300 text-center group">
-      <div className="w-14 md:w-20 h-14 md:h-20 mx-auto mb-3 md:mb-4 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green text-lg md:text-2xl font-bold group-hover:bg-neon-green/30 group-hover:shadow-neon transition-all duration-300">
-        {initials}
-      </div>
-      <h3 className="text-sm md:text-lg font-semibold text-white">{name}</h3>
-      <p className="text-xs md:text-sm text-zinc-500 mt-1">{role}</p>
     </div>
   )
 }

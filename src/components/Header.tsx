@@ -12,7 +12,6 @@ export function Header() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/services', label: 'Services' },
-    { path: '/work', label: 'Our Work' },
     { path: '/about', label: 'About' },
     { path: '/contact', label: 'Contact' },
   ]

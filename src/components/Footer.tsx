@@ -38,9 +38,7 @@ export function Footer() {
           <div className="flex flex-col gap-4">
             <span className="text-sm font-semibold text-white">Company</span>
             <Link to="/about" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">About Us</Link>
-            <Link to="/work" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Our Work</Link>
-            <Link to="/contact" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Careers</Link>
-            <Link to="/about" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Blog</Link>
+            <Link to="/contact" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Contact</Link>
           </div>
           <div className="flex flex-col gap-4 col-span-2 sm:col-span-1">
             <span className="text-sm font-semibold text-white">Contact</span>

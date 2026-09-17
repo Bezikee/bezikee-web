@@ -5,7 +5,6 @@ import { Home } from './pages/Home'
 import { Contact } from './pages/Contact'
 import { Services } from './pages/Services'
 import { About } from './pages/About'
-import { Work } from './pages/Work'
 import { NeonParticles } from './components/NeonParticles'
 import { CustomCursor } from './components/CustomCursor'
 import { ScrollProgress } from './components/ScrollProgress'
@@ -61,7 +60,6 @@ export function AppContent() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
-              <Route path="/work" element={<Work />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               {/* Catch all for 404 */}

@@ -22,16 +22,10 @@ export const PAGES: PageMeta[] = [
       'Web development, mobile apps, custom software and UI/UX design. See how we work and choose the package that fits your business.',
   },
   {
-    path: '/work',
-    title: 'Our Work - Bezikee',
-    description:
-      'Explore the Bezikee portfolio: client projects, measurable results, testimonials and the sectors we serve.',
-  },
-  {
     path: '/about',
     title: 'About Us - Bezikee',
     description:
-      'Founded in 2019, Bezikee grew from a freelance operation into a full-service digital agency. Meet the team and learn what drives us.',
+      'Bezikee is a new software development agency helping businesses get well-built websites, apps and custom software. Learn what drives us.',
   },
   {
     path: '/contact',
