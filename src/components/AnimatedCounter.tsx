@@ -79,9 +79,13 @@ export function AnimatedCounter({
       {/* Content */}
       <div className="relative z-10">
         <div className="text-3xl md:text-5xl font-bold text-neon-green mb-1 md:mb-2 tabular-nums group-hover:drop-shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-all duration-500">
-          {prefix}
-          {displayValue}
-          {suffix}
+          {/* Final value for crawlers and screen readers; the counting number is visual only */}
+          <span className="sr-only">{prefix}{decimals > 0 ? end.toFixed(decimals) : end}{suffix}</span>
+          <span aria-hidden="true">
+            {prefix}
+            {displayValue}
+            {suffix}
+          </span>
         </div>
         <div className="text-xs md:text-base text-zinc-400 font-medium">{label}</div>
       </div>

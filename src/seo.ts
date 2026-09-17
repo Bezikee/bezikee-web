@@ -1,0 +1,63 @@
+export const SITE_URL = 'https://bezikee.github.io/bezikee-web'
+export const SITE_NAME = 'Bezikee'
+
+export interface PageMeta {
+  path: string
+  title: string
+  description: string
+}
+
+// Every route listed here is prerendered to static HTML and included in the sitemap
+export const PAGES: PageMeta[] = [
+  {
+    path: '/',
+    title: 'Bezikee - Software Development Agency',
+    description:
+      'Bezikee is a software development agency in Madrid building websites, mobile apps and custom software that help businesses across Europe grow.',
+  },
+  {
+    path: '/services',
+    title: 'Services & Pricing - Bezikee',
+    description:
+      'Web development, mobile apps, custom software and UI/UX design. See how we work and choose the package that fits your business.',
+  },
+  {
+    path: '/work',
+    title: 'Our Work - Bezikee',
+    description:
+      'Explore the Bezikee portfolio: client projects, measurable results, testimonials and the sectors we serve.',
+  },
+  {
+    path: '/about',
+    title: 'About Us - Bezikee',
+    description:
+      'Founded in 2019, Bezikee grew from a freelance operation into a full-service digital agency. Meet the team and learn what drives us.',
+  },
+  {
+    path: '/contact',
+    title: 'Contact - Bezikee',
+    description:
+      'Tell us about your project. Get in touch with Bezikee to discuss websites, apps and custom software for your business.',
+  },
+]
+
+export const NOT_FOUND_META: PageMeta = {
+  path: '/404',
+  title: 'Page Not Found - Bezikee',
+  description: "The page you're looking for doesn't exist or has been moved.",
+}
+
+// Strips the trailing slash GitHub Pages adds to directory URLs ("/about/" -> "/about")
+export function normalizePath(pathname: string): string {
+  return pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
+}
+
+export function getPageMeta(pathname: string): PageMeta {
+  const path = normalizePath(pathname)
+  return PAGES.find((page) => page.path === path) ?? NOT_FOUND_META
+}
+
+// Canonical URLs use the trailing-slash form GitHub Pages serves without a redirect
+export function canonicalUrl(path: string): string {
+  return path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}/`
+}

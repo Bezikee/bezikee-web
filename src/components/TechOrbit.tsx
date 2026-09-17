@@ -11,6 +11,12 @@ const technologies = [
   { name: 'Docker', color: '#2496ED', angle: 315 },
 ]
 
+// Deterministic pseudo-random in [0, 1) so prerendered and hydrated markup match
+function seededRandom(index: number, salt: number) {
+  const x = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453
+  return x - Math.floor(x)
+}
+
 export function TechOrbit() {
   const [hoveredTech, setHoveredTech] = useState<string | null>(null)
   const [isPaused, setIsPaused] = useState(false)
@@ -127,10 +133,10 @@ export function TechOrbit() {
           key={i}
           className="absolute w-1 h-1 bg-neon-green/30 rounded-full animate-float"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${3 + Math.random() * 4}s`,
+            left: `${seededRandom(i, 1) * 100}%`,
+            top: `${seededRandom(i, 2) * 100}%`,
+            animationDelay: `${seededRandom(i, 3) * 5}s`,
+            animationDuration: `${3 + seededRandom(i, 4) * 4}s`,
           }}
         />
       ))}

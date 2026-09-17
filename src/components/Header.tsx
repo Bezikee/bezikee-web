@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
+import { normalizePath } from '../seo'
 
 export function Header() {
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const isActive = (path: string) => location.pathname === path
+  const isActive = (path: string) => normalizePath(location.pathname) === path
 
   const navLinks = [
     { path: '/', label: 'Home' },

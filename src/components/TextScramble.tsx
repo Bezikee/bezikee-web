@@ -81,7 +81,9 @@ export function TextScramble({
 
   return (
     <span ref={ref} className={`font-mono ${className}`}>
-      {displayText}
+      {/* Real text for crawlers and screen readers; the animated copy is visual only */}
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">{displayText}</span>
     </span>
   )
 }
