@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Globe, Smartphone, Layers, Check, ArrowRight } from 'lucide-react'
 import { CodeTypingAnimation } from '../components/CodeTypingAnimation'
-import { TechStackSection } from '../components/TechOrbit'
+import { StandardsSection } from '../components/StandardsOrbit'
 import { FadeIn, GradientText } from '../components/ScrollAnimations'
 import { MagneticButton } from '../components/MagneticButton'
 import { TiltCard } from '../components/TiltCard'
@@ -128,8 +128,8 @@ export function Home() {
         </FadeIn>
       </section>
 
-      {/* Tech Stack Section */}
-      <TechStackSection />
+      {/* Standards Section */}
+      <StandardsSection />
 
       {/* Pricing Section */}
       <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 section-glow relative overflow-hidden">
