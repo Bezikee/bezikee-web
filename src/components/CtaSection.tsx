@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { FadeIn } from './ScrollAnimations'
@@ -18,11 +18,33 @@ interface CtaSectionProps {
 
 // Closing call-to-action: a dark glass panel with a neon gradient border instead of a solid green band
 export function CtaSection({ title, description, primary, secondary }: CtaSectionProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // Move the glow with the cursor via CSS variables, so hovering doesn't re-render the section
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const panel = panelRef.current
+    if (!panel) return
+    const rect = panel.getBoundingClientRect()
+    panel.style.setProperty('--glow-x', `${e.clientX - rect.left}px`)
+    panel.style.setProperty('--glow-y', `${e.clientY - rect.top}px`)
+  }
+
+  // Clearing the variables lets the glow drift back to its resting spot at the top centre
+  const handleMouseLeave = () => {
+    panelRef.current?.style.removeProperty('--glow-x')
+    panelRef.current?.style.removeProperty('--glow-y')
+  }
+
   return (
     <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20">
       <FadeIn animation="zoom-in">
         <div className="relative max-w-4xl mx-auto rounded-2xl md:rounded-3xl p-px bg-gradient-to-br from-neon-green/60 via-dark-border to-teal-400/40 shadow-neon">
-          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0c0f0e] px-6 py-12 md:px-16 md:py-16">
+          <div
+            ref={panelRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0c0f0e] px-6 py-12 md:px-16 md:py-16"
+          >
             {/* Faint grid texture fading out from the centre */}
             <div
               className="absolute inset-0 opacity-[0.15] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
@@ -32,8 +54,11 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
                 backgroundSize: '32px 32px',
               }}
             />
-            {/* Soft glow behind the heading */}
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[420px] md:w-[640px] h-64 bg-neon-green/20 rounded-full blur-3xl" />
+            {/* Soft glow: rests behind the heading and follows the cursor on hover */}
+            <div
+              className="absolute -translate-x-1/2 -translate-y-1/2 w-[420px] md:w-[640px] h-64 bg-neon-green/20 rounded-full blur-3xl pointer-events-none transition-[left,top] duration-500 ease-out motion-reduce:transition-none"
+              style={{ left: 'var(--glow-x, 50%)', top: 'var(--glow-y, 32px)' }}
+            />
 
             <div className="relative flex flex-col items-center gap-4 md:gap-6 text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">{title}</h2>
