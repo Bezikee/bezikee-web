@@ -11,7 +11,12 @@ interface Particle {
   maxLife: number
 }
 
-export function NeonParticles() {
+interface NeonParticlesProps {
+  // Fill the parent element and react only to the cursor inside it, instead of covering the viewport
+  contained?: boolean
+}
+
+export function NeonParticles({ contained = false }: NeonParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: -1000, y: -1000 })
@@ -41,50 +46,71 @@ export function NeonParticles() {
     const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) return
 
+    const container = contained ? canvas.parentElement : null
+    const size = () => container
+      ? { width: container.clientWidth, height: container.clientHeight }
+      : { width: window.innerWidth, height: window.innerHeight }
+
     // Check if on mobile for performance optimization
     const isMobile = window.innerWidth < 768
-    const particleCount = isMobile ? 20 : 35
-    const maxParticles = isMobile ? 35 : 60
+    const particleCount = contained ? (isMobile ? 10 : 18) : (isMobile ? 20 : 35)
+    const maxParticles = contained ? (isMobile ? 18 : 32) : (isMobile ? 35 : 60)
 
     const resizeCanvas = () => {
       // Cap DPR for mobile performance
       const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2)
-      canvas.width = window.innerWidth * dpr
-      canvas.height = window.innerHeight * dpr
+      const { width, height } = size()
+      canvas.width = width * dpr
+      canvas.height = height * dpr
       ctx.scale(dpr, dpr)
-      canvas.style.width = `${window.innerWidth}px`
-      canvas.style.height = `${window.innerHeight}px`
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
     }
 
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
+    const resizeObserver = container ? new ResizeObserver(resizeCanvas) : null
+    if (container) resizeObserver?.observe(container)
 
     // Initialize particles - fewer on mobile for performance
+    const initial = size()
     particlesRef.current = Array.from({ length: particleCount }, () =>
       createParticle(
-        Math.random() * window.innerWidth,
-        Math.random() * window.innerHeight
+        Math.random() * initial.width,
+        Math.random() * initial.height
       )
     )
 
     let lastSpawnTime = 0
+    const eventTarget: HTMLElement | Window = container ?? window
 
-    const handleMouseMove = (e: MouseEvent) => {
-      targetMouseRef.current = { x: e.clientX, y: e.clientY }
+    const handleMouseMove = (e: Event) => {
+      const { clientX, clientY } = e as MouseEvent
+      const rect = container?.getBoundingClientRect()
+      const x = rect ? clientX - rect.left : clientX
+      const y = rect ? clientY - rect.top : clientY
+      // Entering a container: start at the cursor instead of sweeping in from off-canvas
+      if (mouseRef.current.x < 0) mouseRef.current = { x, y }
+      targetMouseRef.current = { x, y }
 
       // Spawn particles occasionally on movement
       const now = Date.now()
       if (now - lastSpawnTime > 80 && particlesRef.current.length < maxParticles) {
-        particlesRef.current.push(createParticle(e.clientX, e.clientY, true))
+        particlesRef.current.push(createParticle(x, y, true))
         lastSpawnTime = now
       }
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
+    const handleMouseLeave = () => {
+      mouseRef.current = { x: -1000, y: -1000 }
+      targetMouseRef.current = { x: -1000, y: -1000 }
+    }
+
+    eventTarget.addEventListener('mousemove', handleMouseMove)
+    if (container) container.addEventListener('mouseleave', handleMouseLeave)
 
     const animate = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
+      const { width, height } = size()
       timeRef.current += 0.01
 
       // Clear canvas
@@ -153,7 +179,7 @@ export function NeonParticles() {
         p.vy += Math.cos(timeRef.current + i * 0.5) * 0.003
 
         // Wrap edges
-        if (p.maxLife > 99999) {
+        if (p.maxLife >= 99999) {
           if (p.x < -20) p.x = width + 20
           if (p.x > width + 20) p.x = -20
           if (p.y < -20) p.y = height + 20
@@ -234,20 +260,35 @@ export function NeonParticles() {
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    animate()
+    // A contained field only animates while it's on screen
+    const stop = () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current)
+      animationRef.current = undefined
+    }
+    const visibilityObserver = container
+      ? new IntersectionObserver(([entry]) => {
+          if (entry.isIntersecting && !animationRef.current) animate()
+          else if (!entry.isIntersecting) stop()
+        })
+      : null
+    if (container) visibilityObserver?.observe(container)
+    else animate()
 
     return () => {
       window.removeEventListener('resize', resizeCanvas)
-      window.removeEventListener('mousemove', handleMouseMove)
-      if (animationRef.current) cancelAnimationFrame(animationRef.current)
+      eventTarget.removeEventListener('mousemove', handleMouseMove)
+      container?.removeEventListener('mouseleave', handleMouseLeave)
+      resizeObserver?.disconnect()
+      visibilityObserver?.disconnect()
+      stop()
     }
-  }, [createParticle])
+  }, [createParticle, contained])
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 1 }}
+      className={`${contained ? 'absolute' : 'fixed'} inset-0 pointer-events-none`}
+      style={contained ? undefined : { zIndex: 1 }}
     />
   )
 }

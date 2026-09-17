@@ -1,8 +1,9 @@
-import { ReactNode, useEffect, useRef } from 'react'
+import { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { FadeIn } from './ScrollAnimations'
 import { MagneticButton } from './MagneticButton'
+import { NeonParticles } from './NeonParticles'
 
 interface CtaAction {
   label: string
@@ -16,82 +17,13 @@ interface CtaSectionProps {
   secondary?: CtaAction
 }
 
-// Distance of the glow's resting centre from the top of the panel, in px
-const GLOW_REST_TOP = 32
-
 // Closing call-to-action: a dark glass panel with a neon gradient border instead of a solid green band
 export function CtaSection({ title, description, primary, secondary }: CtaSectionProps) {
-  const panelRef = useRef<HTMLDivElement>(null)
-  const glowRef = useRef<HTMLDivElement>(null)
-  const trailRef = useRef<HTMLDivElement>(null)
-  // Offsets from the resting spot (top centre). The trail lags behind the main cloud,
-  // so the glow stretches out while moving and gathers back together when it stops.
-  const glowOffset = useRef({ x: 0, y: 0 })
-  const trailOffset = useRef({ x: 0, y: 0 })
-  const target = useRef({ x: 0, y: 0 })
-  const frame = useRef<number | null>(null)
-  const lastTime = useRef(0)
-
-  useEffect(() => () => {
-    if (frame.current !== null) cancelAnimationFrame(frame.current)
-  }, [])
-
-  // Ease toward the target every frame and move the layers with GPU transforms, so they glide smoothly
-  const tick = (time: number) => {
-    const elapsed = lastTime.current ? Math.min(time - lastTime.current, 64) : 16.7
-    lastTime.current = time
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    const layers = [
-      // Share of the remaining distance kept per 60fps frame: the main cloud covers ~10%, the trail ~5%
-      { el: glowRef.current, offset: glowOffset.current, keep: 0.9 },
-      { el: trailRef.current, offset: trailOffset.current, keep: 0.95 },
-    ]
-    let moving = false
-    for (const { el, offset, keep } of layers) {
-      const ease = reduceMotion ? 1 : 1 - Math.pow(keep, elapsed / 16.7)
-      offset.x += (target.current.x - offset.x) * ease
-      offset.y += (target.current.y - offset.y) * ease
-      if (el) {
-        // Plain pixels (half the layer's size re-centres it), matching the initial translate(-50%, -50%)
-        el.style.transform = `translate3d(${offset.x - el.offsetWidth / 2}px, ${offset.y - el.offsetHeight / 2}px, 0)`
-      }
-      if (Math.abs(target.current.x - offset.x) > 0.1 || Math.abs(target.current.y - offset.y) > 0.1) moving = true
-    }
-
-    if (moving) {
-      frame.current = requestAnimationFrame(tick)
-    } else {
-      frame.current = null
-      lastTime.current = 0
-    }
-  }
-
-  const moveGlowTo = (x: number, y: number) => {
-    target.current = { x, y }
-    if (frame.current === null) frame.current = requestAnimationFrame(tick)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const panel = panelRef.current
-    if (!panel) return
-    const rect = panel.getBoundingClientRect()
-    moveGlowTo(e.clientX - rect.left - rect.width / 2, e.clientY - rect.top - GLOW_REST_TOP)
-  }
-
-  // Drift back to the resting spot behind the heading
-  const handleMouseLeave = () => moveGlowTo(0, 0)
-
   return (
     <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20">
       <FadeIn animation="zoom-in">
         <div className="relative max-w-4xl mx-auto rounded-2xl md:rounded-3xl p-px bg-gradient-to-br from-neon-green/60 via-dark-border to-teal-400/40 shadow-neon">
-          <div
-            ref={panelRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0c0f0e] px-6 py-12 md:px-16 md:py-16"
-          >
+          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0c0f0e] px-6 py-12 md:px-16 md:py-16">
             {/* Faint grid texture fading out from the centre */}
             <div
               className="absolute inset-0 opacity-[0.15] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
@@ -101,28 +33,13 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
                 backgroundSize: '32px 32px',
               }}
             />
-            {/* Cloud glow: rests behind the heading and follows the cursor on hover. Soft drifting
-                blobs under a wispy noise mask give it texture; see .cta-cloud in index.css. */}
+            {/* Soft glow behind the heading */}
             <div
-              ref={trailRef}
-              className="absolute left-1/2 w-[460px] md:w-[620px] h-[320px] pointer-events-none will-change-transform"
-              style={{ top: GLOW_REST_TOP, transform: 'translate3d(-50%, -50%, 0)' }}
-            >
-              <div className="cta-cloud">
-                <div className="cta-cloud__blob cta-cloud__blob--trail" />
-              </div>
-            </div>
-            <div
-              ref={glowRef}
-              className="absolute left-1/2 w-[560px] md:w-[760px] h-[380px] pointer-events-none will-change-transform"
-              style={{ top: GLOW_REST_TOP, transform: 'translate3d(-50%, -50%, 0)' }}
-            >
-              <div className="cta-cloud">
-                <div className="cta-cloud__blob cta-cloud__blob--a" />
-                <div className="cta-cloud__blob cta-cloud__blob--b" />
-                <div className="cta-cloud__blob cta-cloud__blob--c" />
-              </div>
-            </div>
+              className="absolute left-1/2 top-8 -translate-x-1/2 -translate-y-1/2 w-[560px] md:w-[760px] h-[380px] pointer-events-none"
+              style={{ background: 'radial-gradient(closest-side, rgba(16,185,129,0.2), rgba(16,185,129,0.08) 45%, transparent)' }}
+            />
+            {/* Same neon particle field as the page background, reacting to the cursor inside the panel */}
+            <NeonParticles contained />
 
             <div className="relative flex flex-col items-center gap-4 md:gap-6 text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">{title}</h2>

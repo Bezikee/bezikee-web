@@ -6,7 +6,7 @@ import { FadeIn, GradientText } from '../components/ScrollAnimations'
 import { MagneticButton } from '../components/MagneticButton'
 import { TiltCard } from '../components/TiltCard'
 import { TextScramble } from '../components/TextScramble'
-import { ParallaxSection, FloatingElements } from '../components/ParallaxSection'
+import { ParallaxSection } from '../components/ParallaxSection'
 import { CtaSection } from '../components/CtaSection'
 
 export function Home() {
@@ -15,7 +15,6 @@ export function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[80vh] lg:min-h-[90vh] flex items-center py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 overflow-hidden">
         {/* Floating decorative elements */}
-        <FloatingElements />
 
         {/* Gradient overlays for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/50 via-transparent to-dark-bg z-[1]"></div>
@@ -79,7 +78,6 @@ export function Home() {
 
       {/* Services Preview Section */}
       <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 section-glow relative overflow-hidden">
-        <FloatingElements />
 
         <FadeIn animation="fade-up">
           <div className="flex flex-col items-center gap-3 md:gap-4 mb-10 md:mb-16">
@@ -135,7 +133,6 @@ export function Home() {
 
       {/* Pricing Section */}
       <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 section-glow relative overflow-hidden">
-        <FloatingElements />
 
         <FadeIn animation="fade-up">
           <div className="flex flex-col items-center gap-3 md:gap-4 mb-10 md:mb-16">
