@@ -129,36 +129,41 @@ export function CodeTypingAnimation() {
   )
 }
 
+const KEYWORDS = new Set(['const', 'let', 'var', 'function', 'return', 'async', 'await', 'export', 'default', 'interface', 'type', 'import', 'from'])
+const TYPES = new Set(['string', 'number', 'boolean', 'Promise', 'Project', 'Result'])
+
+// One pass over the line: comment | string (may be unterminated mid-typing) | JSX tag | word
+const TOKEN = /(\/\/.*$)|(["'`])(?:(?!\2).)*\2?|(?<!\w)(<\/?)([A-Za-z]\w*)|\b[A-Za-z_]\w*\b/g
+
 function highlightSyntax(line: string): React.ReactNode {
-  // Simple syntax highlighting
-  const keywords = ['const', 'let', 'var', 'function', 'return', 'async', 'await', 'export', 'default', 'interface', 'type', 'import', 'from']
-  const types = ['string', 'number', 'boolean', 'Promise', 'Project', 'Result']
+  // Simple syntax highlighting, rendered as elements so partial code can never become markup
+  const nodes: React.ReactNode[] = []
+  let last = 0
 
-  let result = line
+  for (const match of line.matchAll(TOKEN)) {
+    const [text, comment, quote, tagOpen, tagName] = match
+    const start = match.index!
+    const end = start + text.length
+    if (start > last) nodes.push(line.slice(last, start))
 
-  // Highlight strings
-  result = result.replace(/(["'`])(.*?)\1/g, '<span class="text-amber-400">$1$2$1</span>')
+    if (comment) {
+      nodes.push(<span key={start} className="text-zinc-500">{text}</span>)
+    } else if (quote) {
+      nodes.push(<span key={start} className="text-amber-400">{text}</span>)
+    } else if (tagOpen) {
+      nodes.push(tagOpen, <span key={start} className="text-red-400">{tagName}</span>)
+    } else if (KEYWORDS.has(text)) {
+      nodes.push(<span key={start} className="text-purple-400">{text}</span>)
+    } else if (TYPES.has(text)) {
+      nodes.push(<span key={start} className="text-cyan-400">{text}</span>)
+    } else if (/^\s*\(/.test(line.slice(end))) {
+      nodes.push(<span key={start} className="text-blue-400">{text}</span>)
+    } else {
+      nodes.push(text)
+    }
+    last = end
+  }
 
-  // Highlight keywords
-  keywords.forEach(keyword => {
-    const regex = new RegExp(`\\b(${keyword})\\b`, 'g')
-    result = result.replace(regex, '<span class="text-purple-400">$1</span>')
-  })
-
-  // Highlight types
-  types.forEach(type => {
-    const regex = new RegExp(`\\b(${type})\\b`, 'g')
-    result = result.replace(regex, '<span class="text-cyan-400">$1</span>')
-  })
-
-  // Highlight JSX tags
-  result = result.replace(/(&lt;|<)(\/?)(\w+)/g, '$1$2<span class="text-red-400">$3</span>')
-
-  // Highlight functions
-  result = result.replace(/(\w+)(\s*\()/g, '<span class="text-blue-400">$1</span>$2')
-
-  // Highlight comments
-  result = result.replace(/(\/\/.*$)/g, '<span class="text-zinc-500">$1</span>')
-
-  return <span dangerouslySetInnerHTML={{ __html: result }} />
+  if (last < line.length) nodes.push(line.slice(last))
+  return nodes
 }
