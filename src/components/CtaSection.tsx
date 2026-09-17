@@ -23,8 +23,11 @@ const GLOW_REST_TOP = 32
 export function CtaSection({ title, description, primary, secondary }: CtaSectionProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const glowRef = useRef<HTMLDivElement>(null)
-  // Glow offset from its resting spot (top centre): where it is now and where it's heading
-  const offset = useRef({ x: 0, y: 0 })
+  const trailRef = useRef<HTMLDivElement>(null)
+  // Offsets from the resting spot (top centre). The trail lags behind the main cloud,
+  // so the glow stretches out while moving and gathers back together when it stops.
+  const glowOffset = useRef({ x: 0, y: 0 })
+  const trailOffset = useRef({ x: 0, y: 0 })
   const target = useRef({ x: 0, y: 0 })
   const frame = useRef<number | null>(null)
   const lastTime = useRef(0)
@@ -33,24 +36,30 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
     if (frame.current !== null) cancelAnimationFrame(frame.current)
   }, [])
 
-  // Ease toward the target every frame and move the glow with a GPU transform, so it glides smoothly
+  // Ease toward the target every frame and move the layers with GPU transforms, so they glide smoothly
   const tick = (time: number) => {
     const elapsed = lastTime.current ? Math.min(time - lastTime.current, 64) : 16.7
     lastTime.current = time
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    // Frame-rate independent smoothing: covers ~10% of the remaining distance per 60fps frame
-    const ease = reduceMotion ? 1 : 1 - Math.pow(0.9, elapsed / 16.7)
 
-    const current = offset.current
-    current.x += (target.current.x - current.x) * ease
-    current.y += (target.current.y - current.y) * ease
-    const glow = glowRef.current
-    if (glow) {
-      // Plain pixels (half the glow's size re-centres it), matching the initial translate(-50%, -50%)
-      glow.style.transform = `translate3d(${current.x - glow.offsetWidth / 2}px, ${current.y - glow.offsetHeight / 2}px, 0)`
+    const layers = [
+      // Share of the remaining distance kept per 60fps frame: the main cloud covers ~10%, the trail ~5%
+      { el: glowRef.current, offset: glowOffset.current, keep: 0.9 },
+      { el: trailRef.current, offset: trailOffset.current, keep: 0.95 },
+    ]
+    let moving = false
+    for (const { el, offset, keep } of layers) {
+      const ease = reduceMotion ? 1 : 1 - Math.pow(keep, elapsed / 16.7)
+      offset.x += (target.current.x - offset.x) * ease
+      offset.y += (target.current.y - offset.y) * ease
+      if (el) {
+        // Plain pixels (half the layer's size re-centres it), matching the initial translate(-50%, -50%)
+        el.style.transform = `translate3d(${offset.x - el.offsetWidth / 2}px, ${offset.y - el.offsetHeight / 2}px, 0)`
+      }
+      if (Math.abs(target.current.x - offset.x) > 0.1 || Math.abs(target.current.y - offset.y) > 0.1) moving = true
     }
 
-    if (Math.abs(target.current.x - current.x) > 0.1 || Math.abs(target.current.y - current.y) > 0.1) {
+    if (moving) {
       frame.current = requestAnimationFrame(tick)
     } else {
       frame.current = null
@@ -92,17 +101,28 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
                 backgroundSize: '32px 32px',
               }}
             />
-            {/* Soft glow: rests behind the heading and follows the cursor on hover.
-                A radial gradient instead of a blur filter keeps it cheap to move every frame. */}
+            {/* Cloud glow: rests behind the heading and follows the cursor on hover. Soft drifting
+                blobs under a wispy noise mask give it texture; see .cta-cloud in index.css. */}
+            <div
+              ref={trailRef}
+              className="absolute left-1/2 w-[460px] md:w-[620px] h-[320px] pointer-events-none will-change-transform"
+              style={{ top: GLOW_REST_TOP, transform: 'translate3d(-50%, -50%, 0)' }}
+            >
+              <div className="cta-cloud">
+                <div className="cta-cloud__blob cta-cloud__blob--trail" />
+              </div>
+            </div>
             <div
               ref={glowRef}
               className="absolute left-1/2 w-[560px] md:w-[760px] h-[380px] pointer-events-none will-change-transform"
-              style={{
-                top: GLOW_REST_TOP,
-                transform: 'translate3d(-50%, -50%, 0)',
-                background: 'radial-gradient(closest-side, rgba(16,185,129,0.22), rgba(16,185,129,0.1) 45%, transparent)',
-              }}
-            />
+              style={{ top: GLOW_REST_TOP, transform: 'translate3d(-50%, -50%, 0)' }}
+            >
+              <div className="cta-cloud">
+                <div className="cta-cloud__blob cta-cloud__blob--a" />
+                <div className="cta-cloud__blob cta-cloud__blob--b" />
+                <div className="cta-cloud__blob cta-cloud__blob--c" />
+              </div>
+            </div>
 
             <div className="relative flex flex-col items-center gap-4 md:gap-6 text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">{title}</h2>
