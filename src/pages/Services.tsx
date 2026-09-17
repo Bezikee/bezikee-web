@@ -5,7 +5,7 @@ export function Services() {
   return (
     <div className="pt-16 md:pt-20">
       {/* Hero Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow section-glow--hero">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-semibold text-neon-green tracking-widest">OUR SERVICES</span>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Digital Solutions for Every Business Need</h1>
@@ -100,7 +100,7 @@ export function Services() {
       </section>
 
       {/* Process Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">OUR PROCESS</span>

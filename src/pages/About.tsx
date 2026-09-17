@@ -5,7 +5,7 @@ export function About() {
   return (
     <div className="pt-16 md:pt-20">
       {/* Hero Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow section-glow--hero">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-semibold text-neon-green tracking-widest">ABOUT US</span>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">We're a Team of Digital Craftspeople</h1>
@@ -43,7 +43,7 @@ export function About() {
       </section>
 
       {/* Values Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">OUR VALUES</span>
@@ -104,7 +104,7 @@ export function About() {
       </section>
 
       {/* Why Us Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 md:mb-16">
             <span className="text-xs font-semibold text-neon-green tracking-widest">WHY CHOOSE US</span>

@@ -31,3 +31,60 @@ body {
 .animate-pulse-neon {
   animation: pulse-neon 2s ease-in-out infinite;
 }
+
+/* Neon section separator: glowing edge lines with a travelling light pulse */
+.section-glow {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(180deg, transparent, rgba(16, 185, 129, 0.03) 50%, transparent);
+}
+
+.section-glow::before,
+.section-glow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(209, 250, 229, 1), transparent) -40% 0 / 22% 2px no-repeat,
+    linear-gradient(90deg, transparent 5%, rgba(16, 185, 129, 0.8) 50%, transparent 95%) 0 0 / 100% 1px no-repeat,
+    radial-gradient(ellipse 45% 100% at 50% 0%, rgba(16, 185, 129, 0.2), transparent 100%);
+  animation: section-glow-sweep 7s ease-in-out infinite;
+}
+
+.section-glow::before {
+  top: 0;
+}
+
+.section-glow::after {
+  bottom: 0;
+  transform: scaleY(-1);
+  animation-direction: reverse;
+  animation-delay: -3.5s;
+}
+
+/* Heroes sit directly under the header, and adjacent glow sections share one edge */
+.section-glow--hero::before,
+.section-glow + .section-glow::before {
+  display: none;
+}
+
+@keyframes section-glow-sweep {
+  from {
+    background-position: -40% 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 140% 0, 0 0, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-glow::before,
+  .section-glow::after {
+    animation: none;
+    background-position: -100% 0, 0 0, 0 0;
+  }
+}

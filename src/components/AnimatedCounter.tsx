@@ -100,7 +100,7 @@ export function AnimatedCounter({
 
 export function StatsSection() {
   return (
-    <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section relative overflow-hidden">
+    <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.1),transparent_70%)]"></div>
 

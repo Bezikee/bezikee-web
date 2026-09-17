@@ -92,7 +92,7 @@ export function Home() {
       </section>
 
       {/* Services Preview Section */}
-      <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section relative overflow-hidden">
+      <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 section-glow relative overflow-hidden">
         <FloatingElements />
 
         <FadeIn animation="fade-up">
@@ -148,7 +148,7 @@ export function Home() {
       <TechStackSection />
 
       {/* Pricing Section */}
-      <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section relative overflow-hidden">
+      <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 section-glow relative overflow-hidden">
         <FloatingElements />
 
         <FadeIn animation="fade-up">

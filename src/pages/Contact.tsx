@@ -74,7 +74,7 @@ export function Contact() {
   return (
     <div className="pt-16 md:pt-20">
       {/* Hero Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow section-glow--hero">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-semibold text-neon-green tracking-widest">GET IN TOUCH</span>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Let's Build Something Amazing Together</h1>
@@ -251,7 +251,7 @@ export function Contact() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-section">
+      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8 md:mb-12">
             <span className="text-xs font-semibold text-neon-green tracking-widest">FAQ</span>
