@@ -11,6 +11,21 @@ const technologies = [
   { name: 'Docker', color: '#2496ED', angle: 315 },
 ]
 
+// Node positions as a percentage of the container, on a circle of radius 40%
+const ORBIT_RADIUS = 40
+const nodes = technologies.map((tech) => {
+  const angleRad = (tech.angle * Math.PI) / 180
+  return { ...tech, x: 50 + Math.cos(angleRad) * ORBIT_RADIUS, y: 50 + Math.sin(angleRad) * ORBIT_RADIUS }
+})
+
+// Small lights travelling along the rings: ring inset, lap duration, direction and starting angle
+const ringTravellers = [
+  { inset: 'inset-0', duration: 26, reverse: false, start: 40 },
+  { inset: 'inset-0', duration: 26, reverse: false, start: 220 },
+  { inset: 'inset-8 md:inset-12', duration: 18, reverse: true, start: 130 },
+  { inset: 'inset-16 md:inset-24', duration: 12, reverse: false, start: 300 },
+]
+
 // Deterministic pseudo-random in [0, 1) so prerendered and hydrated markup match
 function seededRandom(index: number, salt: number) {
   const x = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453
@@ -20,6 +35,7 @@ function seededRandom(index: number, salt: number) {
 export function TechOrbit() {
   const [hoveredTech, setHoveredTech] = useState<string | null>(null)
   const [isPaused, setIsPaused] = useState(false)
+  const playState = isPaused ? 'paused' : 'running'
 
   return (
     <div
@@ -36,6 +52,25 @@ export function TechOrbit() {
       {/* Inner orbit ring */}
       <div className="absolute inset-16 md:inset-24 rounded-full border border-neon-green/20"></div>
 
+      {/* Lights travelling along the rings */}
+      {ringTravellers.map((traveller, i) => (
+        <div
+          key={i}
+          className={`absolute ${traveller.inset} pointer-events-none`}
+          style={{ transform: `rotate(${traveller.start}deg)` }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              animation: `spin ${traveller.duration}s linear infinite${traveller.reverse ? ' reverse' : ''}`,
+              animationPlayState: playState,
+            }}
+          >
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-emerald-200 shadow-[0_0_6px_2px_rgba(16,185,129,0.7)]" />
+          </div>
+        </div>
+      ))}
+
       {/* Center element */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-neon-green/20 to-emerald-600/20 border border-neon-green/50 flex items-center justify-center shadow-neon-lg backdrop-blur-sm">
@@ -46,69 +81,90 @@ export function TechOrbit() {
         </div>
       </div>
 
-      {/* Orbiting technologies */}
+      {/* Orbiting technologies: a constellation of glowing particles */}
       <div
         className="absolute inset-0"
         style={{
           animation: 'spin 30s linear infinite',
-          animationPlayState: isPaused ? 'paused' : 'running'
+          animationPlayState: playState,
         }}
       >
-        {technologies.map((tech) => {
-          const angleRad = (tech.angle * Math.PI) / 180
-          // Calculate position as percentage from center
-          // Radius is ~44% of container for mobile, ~40% for desktop
-          const radiusPercent = 40
-          const x = 50 + Math.cos(angleRad) * radiusPercent
-          const y = 50 + Math.sin(angleRad) * radiusPercent
+        {/* Faint links from the core and between neighbouring particles, like the background network */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="tech-orbit-link" cx="50" cy="50" r="42" gradientUnits="userSpaceOnUse">
+              <stop offset="0.35" stopColor="rgb(16,185,129)" stopOpacity="0" />
+              <stop offset="1" stopColor="rgb(16,185,129)" stopOpacity="0.35" />
+            </radialGradient>
+          </defs>
+          {nodes.map((node) => (
+            <line
+              key={node.name}
+              x1="50"
+              y1="50"
+              x2={node.x}
+              y2={node.y}
+              stroke="url(#tech-orbit-link)"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          <polygon
+            points={nodes.map((node) => `${node.x},${node.y}`).join(' ')}
+            fill="none"
+            stroke="rgba(16,185,129,0.12)"
+            strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        {nodes.map((node, i) => {
+          const isHovered = hoveredTech === node.name
 
           return (
             <div
-              key={tech.name}
+              key={node.name}
               className="absolute"
               style={{
-                left: `${x}%`,
-                top: `${y}%`,
+                left: `${node.x}%`,
+                top: `${node.y}%`,
                 transform: 'translate(-50%, -50%)',
               }}
             >
+              {/* Counter-rotate so the label stays upright while the orbit turns */}
               <div
-                className={`
-                  group relative w-10 h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-lg md:rounded-xl bg-dark-card border border-dark-border
-                  flex items-center justify-center cursor-pointer
-                  transition-all duration-300 hover:scale-125 hover:z-10
-                  ${hoveredTech === tech.name ? 'shadow-neon-lg border-neon-green/50 scale-125 z-10' : 'shadow-neon'}
-                `}
+                className="relative w-10 h-10 md:w-14 md:h-14 flex items-center justify-center cursor-pointer"
                 style={{
                   animation: 'counter-spin 30s linear infinite',
-                  animationPlayState: isPaused ? 'paused' : 'running',
-                  boxShadow: hoveredTech === tech.name ? `0 0 30px ${tech.color}40` : undefined,
+                  animationPlayState: playState,
                 }}
-                onMouseEnter={() => setHoveredTech(tech.name)}
+                onMouseEnter={() => setHoveredTech(node.name)}
                 onMouseLeave={() => setHoveredTech(null)}
               >
-                {/* Tech icon placeholder with first letters */}
+                {/* Halo */}
+                <div
+                  className="absolute inset-0 rounded-full animate-pulse-slow transition-transform duration-300"
+                  style={{
+                    background: `radial-gradient(circle, ${node.color}${isHovered ? '66' : '38'} 0%, ${node.color}14 40%, transparent 70%)`,
+                    transform: `scale(${isHovered ? 1.5 : 1})`,
+                    animationDelay: `${-i * 0.5}s`,
+                  }}
+                />
+                {/* Core */}
+                <div
+                  className="relative rounded-full transition-transform duration-300 w-2 h-2 md:w-2.5 md:h-2.5 lg:w-3 lg:h-3"
+                  style={{
+                    background: `radial-gradient(circle at 35% 35%, #ffffff, ${node.color} 60%)`,
+                    boxShadow: `0 0 6px 1px ${node.color}, 0 0 16px 3px ${node.color}66`,
+                    transform: `scale(${isHovered ? 1.6 : 1})`,
+                  }}
+                />
+                {/* Label */}
                 <span
-                  className="font-bold text-xs md:text-base lg:text-lg transition-all duration-300"
-                  style={{ color: tech.color }}
+                  className={`absolute top-full -mt-1 md:mt-0 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[9px] md:text-[11px] lg:text-xs transition-colors duration-300 ${isHovered ? 'text-white' : 'text-zinc-500'}`}
                 >
-                  {tech.name.slice(0, 2)}
+                  {node.name}
                 </span>
-
-                {/* Tooltip - hidden on mobile */}
-                <div className={`
-                  hidden md:block absolute -bottom-10 left-1/2 -translate-x-1/2
-                  px-3 py-1 bg-dark-bg border border-dark-border rounded-lg
-                  text-sm font-medium whitespace-nowrap
-                  transition-all duration-200
-                  ${hoveredTech === tech.name ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}
-                `}
-                style={{
-                  animation: 'none',
-                }}
-                >
-                  <span style={{ color: tech.color }}>{tech.name}</span>
-                </div>
               </div>
             </div>
           )
