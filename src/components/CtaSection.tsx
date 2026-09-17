@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { FadeIn } from './ScrollAnimations'
@@ -16,24 +16,62 @@ interface CtaSectionProps {
   secondary?: CtaAction
 }
 
+// Distance of the glow's resting centre from the top of the panel, in px
+const GLOW_REST_TOP = 32
+
 // Closing call-to-action: a dark glass panel with a neon gradient border instead of a solid green band
 export function CtaSection({ title, description, primary, secondary }: CtaSectionProps) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const glowRef = useRef<HTMLDivElement>(null)
+  // Glow offset from its resting spot (top centre): where it is now and where it's heading
+  const offset = useRef({ x: 0, y: 0 })
+  const target = useRef({ x: 0, y: 0 })
+  const frame = useRef<number | null>(null)
+  const lastTime = useRef(0)
 
-  // Move the glow with the cursor via CSS variables, so hovering doesn't re-render the section
+  useEffect(() => () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current)
+  }, [])
+
+  // Ease toward the target every frame and move the glow with a GPU transform, so it glides smoothly
+  const tick = (time: number) => {
+    const elapsed = lastTime.current ? Math.min(time - lastTime.current, 64) : 16.7
+    lastTime.current = time
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // Frame-rate independent smoothing: covers ~10% of the remaining distance per 60fps frame
+    const ease = reduceMotion ? 1 : 1 - Math.pow(0.9, elapsed / 16.7)
+
+    const current = offset.current
+    current.x += (target.current.x - current.x) * ease
+    current.y += (target.current.y - current.y) * ease
+    const glow = glowRef.current
+    if (glow) {
+      // Plain pixels (half the glow's size re-centres it), matching the initial translate(-50%, -50%)
+      glow.style.transform = `translate3d(${current.x - glow.offsetWidth / 2}px, ${current.y - glow.offsetHeight / 2}px, 0)`
+    }
+
+    if (Math.abs(target.current.x - current.x) > 0.1 || Math.abs(target.current.y - current.y) > 0.1) {
+      frame.current = requestAnimationFrame(tick)
+    } else {
+      frame.current = null
+      lastTime.current = 0
+    }
+  }
+
+  const moveGlowTo = (x: number, y: number) => {
+    target.current = { x, y }
+    if (frame.current === null) frame.current = requestAnimationFrame(tick)
+  }
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const panel = panelRef.current
     if (!panel) return
     const rect = panel.getBoundingClientRect()
-    panel.style.setProperty('--glow-x', `${e.clientX - rect.left}px`)
-    panel.style.setProperty('--glow-y', `${e.clientY - rect.top}px`)
+    moveGlowTo(e.clientX - rect.left - rect.width / 2, e.clientY - rect.top - GLOW_REST_TOP)
   }
 
-  // Clearing the variables lets the glow drift back to its resting spot at the top centre
-  const handleMouseLeave = () => {
-    panelRef.current?.style.removeProperty('--glow-x')
-    panelRef.current?.style.removeProperty('--glow-y')
-  }
+  // Drift back to the resting spot behind the heading
+  const handleMouseLeave = () => moveGlowTo(0, 0)
 
   return (
     <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20">
@@ -54,10 +92,16 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
                 backgroundSize: '32px 32px',
               }}
             />
-            {/* Soft glow: rests behind the heading and follows the cursor on hover */}
+            {/* Soft glow: rests behind the heading and follows the cursor on hover.
+                A radial gradient instead of a blur filter keeps it cheap to move every frame. */}
             <div
-              className="absolute -translate-x-1/2 -translate-y-1/2 w-[420px] md:w-[640px] h-64 bg-neon-green/20 rounded-full blur-3xl pointer-events-none transition-[left,top] duration-500 ease-out motion-reduce:transition-none"
-              style={{ left: 'var(--glow-x, 50%)', top: 'var(--glow-y, 32px)' }}
+              ref={glowRef}
+              className="absolute left-1/2 w-[560px] md:w-[760px] h-[380px] pointer-events-none will-change-transform"
+              style={{
+                top: GLOW_REST_TOP,
+                transform: 'translate3d(-50%, -50%, 0)',
+                background: 'radial-gradient(closest-side, rgba(16,185,129,0.22), rgba(16,185,129,0.1) 45%, transparent)',
+              }}
             />
 
             <div className="relative flex flex-col items-center gap-4 md:gap-6 text-center">
