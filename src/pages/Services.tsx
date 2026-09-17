@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Globe, Smartphone, Layers, Palette, Server, Shield, Check, ArrowRight } from 'lucide-react'
+import { Globe, Smartphone, Layers, Palette, Server, Shield, Check } from 'lucide-react'
+import { CtaSection } from '../components/CtaSection'
+import { GradientText } from '../components/ScrollAnimations'
 
 export function Services() {
   return (
@@ -174,21 +176,11 @@ export function Services() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-neon-green">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 md:mb-6">Ready to Start Your Project?</h2>
-          <p className="text-base md:text-lg text-white/90 mb-6 md:mb-8">
-            Let's discuss how we can help bring your vision to life.
-          </p>
-          <Link
-            to="/contact"
-            className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
-          >
-            Get a Free Quote
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
-      </section>
+      <CtaSection
+        title={<>Ready to Start Your <GradientText>Project</GradientText>?</>}
+        description="Let's discuss how we can help bring your vision to life."
+        primary={{ label: 'Get a Free Quote', to: '/contact' }}
+      />
     </div>
   )
 }

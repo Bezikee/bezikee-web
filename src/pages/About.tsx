@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom'
-import { Target, Heart, Zap, Users, Award, Globe, ArrowRight } from 'lucide-react'
+import { Target, Heart, Zap, Users, Award, Globe } from 'lucide-react'
+import { CtaSection } from '../components/CtaSection'
+import { GradientText } from '../components/ScrollAnimations'
 
 export function About() {
   return (
@@ -137,21 +138,11 @@ export function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-neon-green">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 md:mb-6">Let's Work Together</h2>
-          <p className="text-base md:text-lg text-white/90 mb-6 md:mb-8">
-            Ready to join our growing list of satisfied clients? Let's discuss your project.
-          </p>
-          <Link
-            to="/contact"
-            className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
-          >
-            Start a Conversation
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
-      </section>
+      <CtaSection
+        title={<>Let's Work <GradientText>Together</GradientText></>}
+        description="Have an idea or a project in mind? Let's talk about how we can build it together."
+        primary={{ label: 'Start a Conversation', to: '/contact' }}
+      />
     </div>
   )
 }

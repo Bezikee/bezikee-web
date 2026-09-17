@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom'
-import { ExternalLink, ArrowRight } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+import { CtaSection } from '../components/CtaSection'
+import { GradientText } from '../components/ScrollAnimations'
 
 const projects = [
   {
@@ -146,21 +147,11 @@ export function Work() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-neon-green">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 md:mb-6">Want to See Your Project Here?</h2>
-          <p className="text-base md:text-lg text-white/90 mb-6 md:mb-8">
-            Let's discuss how we can help bring your vision to life and add another success story to our portfolio.
-          </p>
-          <Link
-            to="/contact"
-            className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
-          >
-            Start Your Project
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
-      </section>
+      <CtaSection
+        title={<>Want to See Your Project <GradientText>Here</GradientText>?</>}
+        description="Let's discuss how we can help bring your vision to life."
+        primary={{ label: 'Start Your Project', to: '/contact' }}
+      />
     </div>
   )
 }

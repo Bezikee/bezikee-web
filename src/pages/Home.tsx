@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import { Globe, Smartphone, Layers, Check, ArrowRight } from 'lucide-react'
 import { CodeTypingAnimation } from '../components/CodeTypingAnimation'
-import { StatsSection } from '../components/AnimatedCounter'
 import { TechStackSection } from '../components/TechOrbit'
 import { FadeIn, GradientText } from '../components/ScrollAnimations'
 import { MagneticButton } from '../components/MagneticButton'
 import { TiltCard } from '../components/TiltCard'
 import { TextScramble } from '../components/TextScramble'
 import { ParallaxSection, FloatingElements } from '../components/ParallaxSection'
+import { CtaSection } from '../components/CtaSection'
 
 export function Home() {
   return (
@@ -62,20 +62,6 @@ export function Home() {
                     Contact Us
                   </Link>
                 </MagneticButton>
-              </div>
-            </FadeIn>
-
-            {/* Trust Section */}
-            <FadeIn animation="fade-up" delay={500}>
-              <div className="flex flex-col gap-3 md:gap-4 mt-6 md:mt-8 pt-6 md:pt-8 border-t border-dark-border/50">
-                <span className="text-xs font-semibold text-zinc-600 tracking-widest">TRUSTED BY BUSINESSES ACROSS EUROPE</span>
-                <div className="flex flex-wrap gap-4 md:gap-8 items-center">
-                  {['TechStart', 'GrowthCo', 'InnovateLab', 'ScaleUp'].map((name) => (
-                    <span key={name} className="text-sm md:text-lg font-semibold text-zinc-700 hover:text-neon-green transition-colors duration-300 cursor-pointer">
-                      {name}
-                    </span>
-                  ))}
-                </div>
               </div>
             </FadeIn>
           </div>
@@ -221,89 +207,13 @@ export function Home() {
         </div>
       </section>
 
-      {/* Animated Stats Section */}
-      <StatsSection />
-
-      {/* Testimonials Section */}
-      <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg relative overflow-hidden">
-        <FloatingElements />
-
-        <FadeIn animation="fade-up">
-          <div className="flex flex-col items-center gap-3 md:gap-4 mb-8 md:mb-12">
-            <span className="text-xs font-semibold text-neon-green tracking-widest">TESTIMONIALS</span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">
-              <TextScramble text="What Our Clients Say" delay={200} />
-            </h2>
-          </div>
-        </FadeIn>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
-          <FadeIn animation="fade-up" delay={0}>
-            <TestimonialCard
-              quote="Bezikee transformed our online presence completely. Our new website increased leads by 300% in just 3 months. Highly recommended!"
-              name="Maria García"
-              role="CEO, TechStart Spain"
-            />
-          </FadeIn>
-          <FadeIn animation="fade-up" delay={200}>
-            <TestimonialCard
-              quote="Professional team, excellent communication, and they delivered our mobile app on time and on budget. We've already started our second project with them."
-              name="Thomas Mueller"
-              role="Founder, GrowthCo"
-            />
-          </FadeIn>
-        </div>
-
-        <FadeIn animation="fade-up" delay={400}>
-          <div className="flex justify-center mt-8 md:mt-12">
-            <MagneticButton strength={0.15}>
-              <Link
-                to="/work"
-                className="group px-6 md:px-8 py-3 md:py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
-              >
-                View Our Work
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </Link>
-            </MagneticButton>
-          </div>
-        </FadeIn>
-      </section>
-
       {/* CTA Section */}
-      <section className="py-16 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 bg-neon-green relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-48 md:w-96 h-48 md:h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-white rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-        </div>
-
-        <FadeIn animation="zoom-in">
-          <div className="flex flex-col items-center gap-4 md:gap-6 max-w-[700px] mx-auto relative z-10">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">Ready to Transform Your Business?</h2>
-            <p className="text-base md:text-lg text-white/90 text-center leading-relaxed">
-              Let's discuss your project and find the perfect solution for your needs. Get a free consultation today.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-2 md:mt-4 w-full sm:w-auto">
-              <MagneticButton strength={0.1}>
-                <Link
-                  to="/contact"
-                  className="px-6 md:px-8 py-3 md:py-4 bg-white text-dark-bg font-semibold rounded-lg hover:shadow-lg transition-all duration-300 text-center"
-                >
-                  Start Your Project
-                </Link>
-              </MagneticButton>
-              <MagneticButton strength={0.15}>
-                <Link
-                  to="/contact"
-                  className="px-6 md:px-8 py-3 md:py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300 text-center"
-                >
-                  Schedule a Call
-                </Link>
-              </MagneticButton>
-            </div>
-          </div>
-        </FadeIn>
-      </section>
+      <CtaSection
+        title={<>Ready to <GradientText>Transform</GradientText> Your Business?</>}
+        description="Let's discuss your project and find the perfect solution for your needs. Get a free consultation today."
+        primary={{ label: 'Start Your Project', to: '/contact' }}
+        secondary={{ label: 'Schedule a Call', to: '/contact' }}
+      />
     </div>
   )
 }
@@ -390,26 +300,6 @@ function PricingCard({
             {buttonText}
           </Link>
         </MagneticButton>
-      </div>
-    </TiltCard>
-  )
-}
-
-// Testimonial Card Component with Tilt
-function TestimonialCard({ quote, name, role }: { quote: string; name: string; role: string }) {
-  return (
-    <TiltCard className="h-full" tiltAmount={5} glareOpacity={0.1}>
-      <div className="flex flex-col gap-4 md:gap-6 p-6 md:p-8 bg-dark-card rounded-2xl shadow-neon hover:shadow-neon-lg transition-all duration-300 border border-dark-border hover:border-neon-green/30 h-full">
-        <p className="text-zinc-200 text-sm md:text-base leading-relaxed italic">"{quote}"</p>
-        <div className="flex items-center gap-3 md:gap-4 mt-auto">
-          <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green font-bold text-sm md:text-base">
-            {name.charAt(0)}
-          </div>
-          <div className="flex flex-col gap-0.5 md:gap-1">
-            <span className="text-sm md:text-[15px] font-semibold text-white">{name}</span>
-            <span className="text-xs md:text-sm text-zinc-500">{role}</span>
-          </div>
-        </div>
       </div>
     </TiltCard>
   )
