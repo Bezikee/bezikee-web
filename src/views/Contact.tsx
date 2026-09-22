@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react'
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -102,34 +102,26 @@ export function Contact() {
               <ContactInfo
                 icon={<Mail className="w-5 h-5" />}
                 label="Email"
-                value="hello@bezikee.com"
-                href="mailto:hello@bezikee.com"
+                value="wearebezikee@gmail.com"
+                href="mailto:wearebezikee@gmail.com"
               />
               <ContactInfo
                 icon={<Phone className="w-5 h-5" />}
                 label="Phone"
-                value="+34 612 345 678"
-                href="tel:+34612345678"
+                value="+34 622 300 440"
+                href="tel:+34622300440"
+              />
+              <ContactInfo
+                icon={<Phone className="w-5 h-5" />}
+                label="Phone"
+                value="+34 657 735 246"
+                href="tel:+34657735246"
               />
               <ContactInfo
                 icon={<MapPin className="w-5 h-5" />}
                 label="Location"
                 value="Madrid, Spain"
               />
-              <ContactInfo
-                icon={<Clock className="w-5 h-5" />}
-                label="Response Time"
-                value="Within 24 hours"
-              />
-            </div>
-
-            <div className="p-4 md:p-6 bg-dark-card rounded-xl md:rounded-2xl border border-dark-border shadow-neon">
-              <h3 className="text-base md:text-lg font-semibold text-white mb-2 md:mb-3">Office Hours</h3>
-              <div className="space-y-1 md:space-y-2 text-xs md:text-sm text-zinc-400">
-                <p>Monday - Friday: 9:00 AM - 6:00 PM (CET)</p>
-                <p>Saturday: 10:00 AM - 2:00 PM (CET)</p>
-                <p>Sunday: Closed</p>
-              </div>
             </div>
           </div>
 
@@ -298,7 +290,13 @@ function ContactInfo({ icon, label, value, href }: { icon: React.ReactNode; labe
   )
 
   if (href) {
-    return <a href={href}>{content}</a>
+    // block, not the default inline: the list spaces its rows with space-y-*, which sets
+    // margin-top, and an inline element ignores vertical margins
+    return (
+      <a href={href} className="block">
+        {content}
+      </a>
+    )
   }
   return content
 }

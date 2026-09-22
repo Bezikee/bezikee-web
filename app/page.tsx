@@ -16,8 +16,8 @@ const organizationLd = {
   url: `${SITE_URL}/`,
   description: home.description,
   image: `${SITE_URL}/opengraph-image`,
-  email: 'hello@bezikee.com',
-  telephone: '+34612345678',
+  email: 'wearebezikee@gmail.com',
+  telephone: ['+34622300440', '+34657735246'],
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Madrid',

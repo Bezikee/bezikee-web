@@ -42,13 +42,13 @@ export function Footer() {
           </div>
           <div className="flex flex-col gap-4 col-span-2 sm:col-span-1">
             <span className="text-sm font-semibold text-white">Contact</span>
-            <a href="mailto:hello@bezikee.com" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300 flex items-center gap-2">
+            <a href="mailto:wearebezikee@gmail.com" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300 flex items-center gap-2">
               <Mail className="w-4 h-4 flex-shrink-0" />
-              hello@bezikee.com
+              wearebezikee@gmail.com
             </a>
-            <a href="tel:+34612345678" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300 flex items-center gap-2">
+            <a href="tel:+34622300440" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300 flex items-center gap-2">
               <Phone className="w-4 h-4 flex-shrink-0" />
-              +34 612 345 678
+              +34 622 300 440
             </a>
             <span className="text-sm text-zinc-500 flex items-center gap-2">
               <MapPin className="w-4 h-4 flex-shrink-0" />
