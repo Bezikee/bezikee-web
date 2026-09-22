@@ -76,7 +76,9 @@ export function buildMetadata(meta: PageMeta, { indexable = true } = {}): Metada
       ...(indexable ? { url } : {}),
     },
     twitter: {
-      card: 'summary',
+      // summary_large_image, not summary: app/opengraph-image.tsx is 1200x630, which a
+      // plain summary card would shrink to a small square thumbnail
+      card: 'summary_large_image',
       title: meta.title,
       description: meta.description,
     },
