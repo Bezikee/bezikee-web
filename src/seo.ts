@@ -1,6 +1,6 @@
-// Drives canonical tags, og:url and sitemap.xml. Override with VITE_SITE_URL in the
-// Vercel dashboard when the custom domain is ready — no code change needed.
-export const SITE_URL = import.meta.env.VITE_SITE_URL ?? 'https://bezikee-web.vercel.app'
+// Drives canonical tags, og:url and sitemap.xml. Must stay the domain the site is
+// actually served from — pointing it elsewhere tells crawlers to deindex this one.
+export const SITE_URL = 'https://bezikee.com'
 export const SITE_NAME = 'Bezikee'
 
 export interface PageMeta {
