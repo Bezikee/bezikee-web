@@ -16,6 +16,9 @@ export function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitError, setSubmitError] = useState('')
+  // Hidden from people, visible to bots; a filled value means the submission is automated
+  const [website, setWebsite] = useState('')
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -32,12 +35,23 @@ export function Contact() {
     if (!validateForm()) return
 
     setIsSubmitting(true)
+    setSubmitError('')
 
-    // Simulate API call - In production, connect to Formspree, EmailJS, or your backend
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    try {
+      const response = await fetch('/api/contact/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, website }),
+      })
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+      setIsSubmitted(true)
+    } catch {
+      // Only claim the message was sent when it actually was; otherwise offer the address
+      // directly so the enquiry isn't lost to a failure the visitor can't see
+      setSubmitError("We couldn't send your message just now.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -127,7 +141,7 @@ export function Contact() {
 
           {/* Contact Form */}
           <div className="lg:col-span-2 lg:order-2 order-1">
-            <form onSubmit={handleSubmit} className="p-5 md:p-8 bg-dark-card rounded-xl md:rounded-2xl border border-dark-border shadow-neon">
+            <form onSubmit={handleSubmit} className="relative p-5 md:p-8 bg-dark-card rounded-xl md:rounded-2xl border border-dark-border shadow-neon">
               <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">Send Us a Message</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
@@ -217,6 +231,34 @@ export function Contact() {
                 />
                 {errors.message && <p className="mt-1 text-xs md:text-sm text-red-500">{errors.message}</p>}
               </div>
+
+              {/* Off-screen rather than display:none, which some bots skip. aria-hidden and
+                  tabIndex keep it away from screen readers and keyboard users. */}
+              <div aria-hidden="true" className="absolute left-[-9999px] w-px h-px overflow-hidden">
+                <label htmlFor="website">Leave this field empty</label>
+                <input
+                  id="website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </div>
+
+              {submitError && (
+                <div role="alert" className="mb-3 md:mb-4 p-3 md:p-4 rounded-lg border border-red-500/40 bg-red-500/10">
+                  <p className="text-xs md:text-sm text-red-400">
+                    {submitError}{' '}
+                    Please email us directly at{' '}
+                    <a href="mailto:wearebezikee@gmail.com" className="underline hover:text-red-300">
+                      wearebezikee@gmail.com
+                    </a>
+                    .
+                  </p>
+                </div>
+              )}
 
               <button
                 type="submit"
