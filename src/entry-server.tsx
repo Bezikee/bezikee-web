@@ -8,7 +8,7 @@ export { PAGES, NOT_FOUND_META, SITE_URL, SITE_NAME, canonicalUrl } from './seo'
 export function render(url: string): string {
   return renderToString(
     <React.StrictMode>
-      <StaticRouter location={url} basename="/bezikee-web">
+      <StaticRouter location={url}>
         <AppContent />
       </StaticRouter>
     </React.StrictMode>,

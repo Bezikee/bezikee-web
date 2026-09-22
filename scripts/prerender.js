@@ -1,12 +1,11 @@
 // Renders every route to static HTML after `vite build`, so crawlers that don't run
-// JavaScript (AI bots, link previews) get full page content, and GitHub Pages serves
+// JavaScript (AI bots, link previews) get full page content, and the host serves
 // each route as a real file with a 200 status instead of the 404 fallback.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const BASE = '/bezikee-web'
 const distDir = path.join(root, 'dist')
 const ssrDir = path.join(root, 'dist-ssr')
 
@@ -53,7 +52,7 @@ function headTags(meta, { indexable }) {
 }
 
 function buildPage(url, meta, options) {
-  const appHtml = render(`${BASE}${url}`)
+  const appHtml = render(url)
   if (!appHtml.includes('<main')) {
     throw new Error(`Rendering ${url} produced no page content`)
   }
@@ -82,7 +81,7 @@ for (const page of PAGES) {
   console.log(`prerendered ${page.path} -> ${path.relative(root, outFile)}`)
 }
 
-// GitHub Pages serves 404.html (with a 404 status) for unknown URLs
+// Vercel serves 404.html (with a 404 status) for unknown URLs
 fs.writeFileSync(
   path.join(distDir, '404.html'),
   buildPage(NOT_FOUND_META.path, NOT_FOUND_META, { indexable: false }),

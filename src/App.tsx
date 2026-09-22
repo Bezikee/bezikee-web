@@ -75,7 +75,7 @@ export function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter basename="/bezikee-web">
+    <BrowserRouter>
       <AppContent />
     </BrowserRouter>
   )

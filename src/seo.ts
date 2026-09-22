@@ -1,4 +1,6 @@
-export const SITE_URL = 'https://bezikee.github.io/bezikee-web'
+// Drives canonical tags, og:url and sitemap.xml. Override with VITE_SITE_URL in the
+// Vercel dashboard when the custom domain is ready — no code change needed.
+export const SITE_URL = import.meta.env.VITE_SITE_URL ?? 'https://bezikee-web.vercel.app'
 export const SITE_NAME = 'Bezikee'
 
 export interface PageMeta {
