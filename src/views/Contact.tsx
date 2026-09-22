@@ -189,14 +189,16 @@ export function Contact() {
                   name="service"
                   value={formData.service}
                   onChange={handleChange}
+                  // Values match their labels: the only consumer is the notification email,
+                  // and a code like "web" tells the reader less than "Web Development"
                   options={[
                     { value: '', label: 'Select a service' },
-                    { value: 'web', label: 'Web Development' },
-                    { value: 'mobile', label: 'Mobile App Development' },
-                    { value: 'software', label: 'Custom Software' },
-                    { value: 'design', label: 'UI/UX Design' },
-                    { value: 'consulting', label: 'Consulting' },
-                    { value: 'other', label: 'Other' }
+                    { value: 'Web Development', label: 'Web Development' },
+                    { value: 'Mobile App Development', label: 'Mobile App Development' },
+                    { value: 'Custom Software', label: 'Custom Software' },
+                    { value: 'UI/UX Design', label: 'UI/UX Design' },
+                    { value: 'Consulting', label: 'Consulting' },
+                    { value: 'Other', label: 'Other' }
                   ]}
                 />
                 <FormSelect
@@ -204,13 +206,15 @@ export function Contact() {
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
+                  // Likewise the budget: the old values were the lower bound alone, so a
+                  // €1,000-€5,000 enquiry arrived as "1000" and read as a flat €1,000
                   options={[
                     { value: '', label: 'Select budget range' },
-                    { value: '500', label: '€500 - €1,000' },
-                    { value: '1000', label: '€1,000 - €5,000' },
-                    { value: '5000', label: '€5,000 - €10,000' },
-                    { value: '10000', label: '€10,000 - €25,000' },
-                    { value: '25000', label: '€25,000+' }
+                    { value: '€500 - €1,000', label: '€500 - €1,000' },
+                    { value: '€1,000 - €5,000', label: '€1,000 - €5,000' },
+                    { value: '€5,000 - €10,000', label: '€5,000 - €10,000' },
+                    { value: '€10,000 - €25,000', label: '€10,000 - €25,000' },
+                    { value: '€25,000+', label: '€25,000+' }
                   ]}
                 />
               </div>
