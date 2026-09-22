@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { PAGES, SITE_NAME } from '../src/seo'
+import { logoDataUri } from '../src/logo'
 
 // Social cards were blank before this: nothing in the tree set og:image. Drawn from code
 // in the site's own palette so it needs no design asset and can't drift from the brand.
@@ -11,10 +10,6 @@ export const alt = `${SITE_NAME} - Software Development Agency`
 
 const NEON = '#10B981'
 
-// Satori can't fetch a URL at build time, so the mark is inlined as a data URI
-const LOGO = `data:image/svg+xml;base64,${readFileSync(
-  join(process.cwd(), 'public', 'bezikee-logo.svg'),
-).toString('base64')}`
 
 export default async function Image() {
   const tagline = PAGES.find((p) => p.path === '/')!.description
@@ -45,7 +40,7 @@ export default async function Image() {
           }}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <img src={LOGO} width={84} height={78} alt="" />
+          <img src={logoDataUri()} width={84} height={78} alt="" />
           <div style={{ display: 'flex', fontSize: 68, fontWeight: 700, color: '#FFFFFF' }}>
             bezikee
           </div>
