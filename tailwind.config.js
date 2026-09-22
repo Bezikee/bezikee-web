@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./index.html",
+    "./app/**/*.{js,ts,jsx,tsx}",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
@@ -22,7 +22,7 @@ export default {
         'neon-btn-hover': '0 0 35px rgba(16, 185, 129, 0.8)',
       },
       fontFamily: {
-        'inter': ['Inter', 'sans-serif'],
+        'inter': ['var(--font-inter)', 'Inter', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 30s linear infinite',

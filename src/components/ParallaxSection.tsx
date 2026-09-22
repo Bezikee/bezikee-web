@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef, useState, ReactNode } from 'react'
 
 interface ParallaxSectionProps {

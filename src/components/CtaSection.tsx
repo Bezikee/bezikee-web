@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { FadeIn } from './ScrollAnimations'
 import { MagneticButton } from './MagneticButton'
@@ -47,7 +47,7 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-2 md:mt-4 w-full sm:w-auto">
                 <MagneticButton as="div" strength={0.1}>
                   <Link
-                    to={primary.to}
+                    href={primary.to}
                     className="group px-6 md:px-8 py-3 md:py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover transition-all duration-300 flex items-center justify-center gap-2"
                   >
                     {primary.label}
@@ -57,7 +57,7 @@ export function CtaSection({ title, description, primary, secondary }: CtaSectio
                 {secondary && (
                   <MagneticButton as="div" strength={0.15}>
                     <Link
-                      to={secondary.to}
+                      href={secondary.to}
                       className="px-6 md:px-8 py-3 md:py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center justify-center"
                     >
                       {secondary.label}

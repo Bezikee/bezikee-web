@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Globe, Smartphone, Layers, Palette, Server, Shield, Check } from 'lucide-react'
 import { CtaSection } from '../components/CtaSection'
 import { GradientText } from '../components/ScrollAnimations'
@@ -268,7 +268,7 @@ function PricingCard({
         ))}
       </ul>
       <Link
-        to="/contact"
+        href="/contact"
         className={`block w-full py-3 text-center rounded-lg font-semibold transition-all duration-300 text-sm md:text-base ${
           popular
             ? 'bg-neon-green text-white shadow-neon-btn hover:shadow-neon-btn-hover'

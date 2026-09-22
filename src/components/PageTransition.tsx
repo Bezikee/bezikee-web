@@ -1,12 +1,14 @@
+'use client'
+
 import { ReactNode, useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { usePathname } from 'next/navigation'
 
 interface PageTransitionProps {
   children: ReactNode
 }
 
 export function PageTransition({ children }: PageTransitionProps) {
-  const location = useLocation()
+  const pathname = usePathname()
   const [displayChildren, setDisplayChildren] = useState(children)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
@@ -19,7 +21,7 @@ export function PageTransition({ children }: PageTransitionProps) {
     }, 200)
 
     return () => clearTimeout(timeout)
-  }, [location.pathname, children])
+  }, [pathname, children])
 
   return (
     <div

@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef, useState, ReactNode } from 'react'
 
 type AnimationType = 'fade-up' | 'fade-down' | 'fade-left' | 'fade-right' | 'zoom-in' | 'blur-in'

@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef, useCallback } from 'react'
 
 interface Particle {
@@ -21,7 +23,7 @@ export function NeonParticles({ contained = false }: NeonParticlesProps) {
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: -1000, y: -1000 })
   const targetMouseRef = useRef({ x: -1000, y: -1000 })
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | undefined>(undefined)
   const timeRef = useRef(0)
 
   const createParticle = useCallback((x: number, y: number, fromMouse = false): Particle => {

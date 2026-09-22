@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 // Drives canonical tags, og:url and sitemap.xml. Must stay the domain the site is
 // actually served from — pointing it elsewhere tells crawlers to deindex this one.
 export const SITE_URL = 'https://bezikee.com'
@@ -56,4 +58,27 @@ export function getPageMeta(pathname: string): PageMeta {
 // Canonical URLs use the trailing-slash form GitHub Pages serves without a redirect
 export function canonicalUrl(path: string): string {
   return path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}/`
+}
+
+// Mirrors the head tags scripts/prerender.js used to emit by hand, so the migration to
+// Next's Metadata API doesn't silently drop any of them.
+export function buildMetadata(meta: PageMeta, { indexable = true } = {}): Metadata {
+  const url = canonicalUrl(meta.path)
+  return {
+    title: meta.title,
+    description: meta.description,
+    ...(indexable ? { alternates: { canonical: url } } : { robots: { index: false, follow: true } }),
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      title: meta.title,
+      description: meta.description,
+      ...(indexable ? { url } : {}),
+    },
+    twitter: {
+      card: 'summary',
+      title: meta.title,
+      description: meta.description,
+    },
+  }
 }
