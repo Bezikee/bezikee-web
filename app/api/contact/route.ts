@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-// Where leads land, and who they appear to come from. CONTACT_FROM must be on a domain
-// verified in Resend; until bezikee.com is verified, Resend's onboarding sender works.
+// Where leads land, and who they appear to come from. bezikee.com is verified in Resend,
+// so mail sends from the domain itself: the shared onboarding sender it replaced could only
+// deliver to the account's own address and is likelier to be filtered as spam.
 const TO = process.env.CONTACT_TO_EMAIL ?? 'wearebezikee@gmail.com'
-const FROM = process.env.CONTACT_FROM_EMAIL ?? 'Bezikee <onboarding@resend.dev>'
+const FROM = process.env.CONTACT_FROM_EMAIL ?? 'Bezikee <hello@bezikee.com>'
 
 const MAX = { name: 100, email: 200, company: 100, phone: 40, service: 100, budget: 100, message: 5000 }
 
