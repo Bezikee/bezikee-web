@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Header } from '../src/components/Header'
 import { Footer } from '../src/components/Footer'
 import { NeonParticles } from '../src/components/NeonParticles'
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
