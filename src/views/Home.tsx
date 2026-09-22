@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Globe, Smartphone, Layers, Check, ArrowRight } from 'lucide-react'
 import { CodeTypingAnimation } from '../components/CodeTypingAnimation'
 import { StandardsSection } from '../components/StandardsOrbit'
@@ -46,7 +46,7 @@ export function Home() {
               <div className="flex flex-col sm:flex-row gap-4 mt-2 md:mt-4">
                 <MagneticButton strength={0.1}>
                   <Link
-                    to="/services"
+                    href="/services"
                     className="group px-6 md:px-8 py-3 md:py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover transition-all duration-300 flex items-center justify-center gap-2"
                   >
                     View Our Packages
@@ -55,7 +55,7 @@ export function Home() {
                 </MagneticButton>
                 <MagneticButton strength={0.15}>
                   <Link
-                    to="/contact"
+                    href="/contact"
                     className="px-6 md:px-8 py-3 md:py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 text-center"
                   >
                     Contact Us
@@ -117,7 +117,7 @@ export function Home() {
           <div className="flex justify-center mt-8 md:mt-12">
             <MagneticButton strength={0.15}>
               <Link
-                to="/services"
+                href="/services"
                 className="group px-6 md:px-8 py-3 md:py-4 border border-dark-border text-white font-medium rounded-lg hover:border-neon-green hover:shadow-neon transition-all duration-300 flex items-center gap-2"
               >
                 View All Services
@@ -220,7 +220,7 @@ function ServiceCard({ icon, title, description }: { icon: React.ReactNode; titl
   return (
     <TiltCard className="h-full" tiltAmount={8} glareOpacity={0.15}>
       <Link
-        to="/services"
+        href="/services"
         className="flex flex-col gap-4 md:gap-5 p-6 md:p-8 bg-dark-card border border-dark-border rounded-2xl shadow-neon hover:shadow-neon-lg hover:border-neon-green/50 transition-all duration-300 cursor-pointer group h-full"
       >
         <div className="w-12 md:w-14 h-12 md:h-14 flex items-center justify-center bg-neon-green/10 rounded-xl group-hover:bg-neon-green/20 transition-colors duration-300">
@@ -287,7 +287,7 @@ function PricingCard({
 
         <MagneticButton strength={0.1} className="w-full">
           <Link
-            to="/contact"
+            href="/contact"
             className={`w-full py-3 md:py-4 rounded-lg font-semibold transition-all duration-300 text-center block ${
               buttonVariant === 'filled'
                 ? 'bg-neon-green text-white shadow-neon-btn hover:shadow-neon-btn-hover'

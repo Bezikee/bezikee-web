@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef } from 'react'
 
 const standards = ['Performance', 'Security', 'Responsive', 'SEO-ready', 'Accessibility', 'Scalability', 'Clean code', 'Support']

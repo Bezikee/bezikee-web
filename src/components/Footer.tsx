@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Linkedin, Twitter, Github, Mail, Phone, MapPin } from 'lucide-react'
 
 export function Footer() {
@@ -7,7 +7,7 @@ export function Footer() {
       <div className="flex flex-col lg:flex-row justify-between gap-10 lg:gap-8 mb-12">
         {/* Brand Section */}
         <div className="flex flex-col gap-4 max-w-full lg:max-w-[280px]">
-          <Link to="/" className="text-2xl font-bold text-white hover:text-neon-green transition-colors duration-300">
+          <Link href="/" className="text-2xl font-bold text-white hover:text-neon-green transition-colors duration-300">
             bezikee
           </Link>
           <p className="text-sm text-zinc-500 leading-relaxed">
@@ -30,15 +30,15 @@ export function Footer() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-12 lg:gap-20">
           <div className="flex flex-col gap-4">
             <span className="text-sm font-semibold text-white">Services</span>
-            <Link to="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Web Development</Link>
-            <Link to="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Mobile Apps</Link>
-            <Link to="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Custom Software</Link>
-            <Link to="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">UI/UX Design</Link>
+            <Link href="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Web Development</Link>
+            <Link href="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Mobile Apps</Link>
+            <Link href="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Custom Software</Link>
+            <Link href="/services" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">UI/UX Design</Link>
           </div>
           <div className="flex flex-col gap-4">
             <span className="text-sm font-semibold text-white">Company</span>
-            <Link to="/about" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">About Us</Link>
-            <Link to="/contact" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Contact</Link>
+            <Link href="/about" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">About Us</Link>
+            <Link href="/contact" className="text-sm text-zinc-500 hover:text-neon-green transition-colors duration-300">Contact</Link>
           </div>
           <div className="flex flex-col gap-4 col-span-2 sm:col-span-1">
             <span className="text-sm font-semibold text-white">Contact</span>
@@ -61,8 +61,8 @@ export function Footer() {
       <div className="border-t border-dark-border pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
         <span className="text-sm text-zinc-600 text-center sm:text-left">© 2025 Bezikee. All rights reserved.</span>
         <div className="flex gap-6">
-          <Link to="/privacy" className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors">Privacy Policy</Link>
-          <Link to="/terms" className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors">Terms of Service</Link>
+          <Link href="/privacy" className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors">Terms of Service</Link>
         </div>
       </div>
     </footer>

@@ -34,3 +34,8 @@ npm-debug.log*
 
 # Vercel
 .vercel
+
+# Next
+.next
+next-env.d.ts
+*.tsbuildinfo
