@@ -1,4 +1,6 @@
 import { ImageResponse } from 'next/og'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { PAGES, SITE_NAME } from '../src/seo'
 
 // Social cards were blank before this: nothing in the tree set og:image. Drawn from code
@@ -8,6 +10,11 @@ export const contentType = 'image/png'
 export const alt = `${SITE_NAME} - Software Development Agency`
 
 const NEON = '#10B981'
+
+// Satori can't fetch a URL at build time, so the mark is inlined as a data URI
+const LOGO = `data:image/svg+xml;base64,${readFileSync(
+  join(process.cwd(), 'public', 'bezikee-logo.svg'),
+).toString('base64')}`
 
 export default async function Image() {
   const tagline = PAGES.find((p) => p.path === '/')!.description
@@ -37,8 +44,11 @@ export default async function Image() {
             background: `linear-gradient(90deg, transparent, ${NEON}, transparent)`,
           }}
         />
-        <div style={{ display: 'flex', fontSize: 68, fontWeight: 700, color: '#FFFFFF' }}>
-          bezikee
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <img src={LOGO} width={84} height={78} alt="" />
+          <div style={{ display: 'flex', fontSize: 68, fontWeight: 700, color: '#FFFFFF' }}>
+            bezikee
+          </div>
         </div>
         <div style={{ display: 'flex', marginTop: 28, fontSize: 40, fontWeight: 600, color: NEON }}>
           Software Development Agency

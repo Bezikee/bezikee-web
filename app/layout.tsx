@@ -23,7 +23,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${SITE_NAME} - Software Development Agency`, template: `%s` },
-  icons: { icon: '/vite.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

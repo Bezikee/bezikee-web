@@ -21,7 +21,9 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg/95 backdrop-blur-sm border-b border-dark-border/50">
-      <Link href="/" className="text-xl md:text-2xl font-bold text-white hover:text-neon-green transition-colors duration-300">
+      <Link href="/" className="flex items-center gap-2 md:gap-2.5 text-xl md:text-2xl font-bold text-white hover:text-neon-green transition-colors duration-300">
+        {/* Explicit width/height so the row doesn't reflow once the SVG loads */}
+        <img src="/bezikee-logo.svg" alt="" width={32} height={30} className="w-7 h-auto md:w-8" />
         bezikee
       </Link>
 
