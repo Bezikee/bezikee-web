@@ -154,17 +154,51 @@ export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> 
   return details;
 }
 
+/** Who put a photo on Google: the business itself, or someone else. */
+export type PhotoSource = "business" | "customer";
+
 export type FetchedPhoto = {
-  /** Filename to write beside the generated page, e.g. `photo-1.jpg`. */
+  /** Filename in the build's scratch directory, e.g. `photo-1.jpg`. */
   file: string;
   bytes: Buffer;
   contentType: string;
   /** Google requires these to be shown wherever the photo is. */
   attributions: string[];
+  source: PhotoSource;
 };
 
+/** Case, accents and punctuation don't make a different author. */
+const normalise = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+
 /**
- * Download the first few photos for a place.
+ * Photos the business uploaded itself are credited to the business's own name.
+ * They are the storefront, the interior and the work as the owner wants them
+ * seen — the best evidence of what the place looks like. Customer photos lean
+ * toward plates, selfies and bad lighting.
+ */
+export function photoSource(photo: PlacePhotoRef, businessName: string): PhotoSource {
+  const business = normalise(businessName);
+  const byBusiness = photo.authorAttributions?.some((author) => {
+    const name = normalise(author.displayName ?? "");
+    return name.length > 0 && (name === business || business.startsWith(name) || name.startsWith(business));
+  });
+  return byBusiness ? "business" : "customer";
+}
+
+/** The business's own photos first, each group in Google's order. */
+export function rankPhotos(photos: PlacePhotoRef[], businessName: string): PlacePhotoRef[] {
+  const own = photos.filter((photo) => photoSource(photo, businessName) === "business");
+  const others = photos.filter((photo) => photoSource(photo, businessName) === "customer");
+  return [...own, ...others];
+}
+
+/**
+ * Download photos for a place, the business's own first.
  *
  * Each one is a separate billed request, so the count is capped rather than
  * left to however many Google happens to have. Failures are skipped, not
@@ -173,20 +207,21 @@ export type FetchedPhoto = {
  */
 export async function fetchPlacePhotos(
   photos: PlacePhotoRef[] | undefined,
+  businessName: string,
   limit = PHOTOS_PER_SITE,
 ): Promise<FetchedPhoto[]> {
   if (!photos?.length) return [];
 
   const key = getApiKey();
-  const wanted = photos.slice(0, limit);
+  const wanted = rankPhotos(photos, businessName).slice(0, limit);
   const out: FetchedPhoto[] = [];
 
   for (const [index, photo] of wanted.entries()) {
-    // 1600px wide is enough for a full-bleed hero on a retina laptop without
-    // making the page heavy.
+    // Research for the agent, never published: 1200px shows materials,
+    // signage and colour clearly, and every pixel costs the agent context.
     const url =
       `https://places.googleapis.com/v1/${photo.name}/media` +
-      `?maxWidthPx=1600&key=${encodeURIComponent(key)}`;
+      `?maxWidthPx=1200&key=${encodeURIComponent(key)}`;
 
     try {
       const response = await fetch(url, { redirect: "follow" });
@@ -210,6 +245,7 @@ export async function fetchPlacePhotos(
           photo.authorAttributions
             ?.map((a) => a.displayName ?? "")
             .filter(Boolean) ?? [],
+        source: photoSource(photo, businessName),
       });
     } catch (error) {
       // Only `error` takes a third argument; a skipped photo is a warning.

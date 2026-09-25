@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type BuildStatus = "pending" | "fetching" | "generating" | "completed" | "failed";
+type BuildStatus = "pending" | "fetching" | "generating" | "reviewing" | "completed" | "failed";
 
 type Build = {
   id: number;
@@ -30,7 +30,8 @@ type State = {
 const STAGE_LABEL: Record<BuildStatus, string> = {
   pending: "Starting…",
   fetching: "Fetching details and photos from Google…",
-  generating: "Claude is writing the page…",
+  generating: "Claude is designing the page…",
+  reviewing: "Claude is checking the page in a browser and polishing it…",
   completed: "Done",
   failed: "Failed",
 };
@@ -68,7 +69,8 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
       // Keep polling only while there is something to watch.
       const active =
         next?.live || next?.build?.status === "pending" ||
-        next?.build?.status === "fetching" || next?.build?.status === "generating";
+        next?.build?.status === "fetching" || next?.build?.status === "generating" ||
+          next?.build?.status === "reviewing";
 
       if (active) {
         timer.current = setTimeout(tick, POLL_MS);
@@ -114,7 +116,8 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
         const next = await load();
         const active =
           next?.live || next?.build?.status === "pending" ||
-          next?.build?.status === "fetching" || next?.build?.status === "generating";
+          next?.build?.status === "fetching" || next?.build?.status === "generating" ||
+          next?.build?.status === "reviewing";
         if (active) timer.current = setTimeout(tick, POLL_MS);
         else router.refresh();
       };
@@ -133,7 +136,8 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
     state.live ||
     build?.status === "pending" ||
     build?.status === "fetching" ||
-    build?.status === "generating";
+    build?.status === "generating" ||
+    build?.status === "reviewing";
   const done = build?.status === "completed" && !running;
 
   return (
@@ -172,7 +176,7 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
             <p className="text-xs text-ink-secondary">Look: {state.look}</p>
           ) : null}
           <p className="text-xs text-ink-muted">
-            This usually takes a minute or two. You can leave the page.
+            Designing and reviewing usually takes 5–15 minutes. You can leave the page.
           </p>
         </div>
       ) : (

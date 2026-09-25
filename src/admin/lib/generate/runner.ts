@@ -27,8 +27,13 @@ import {
   COST_PER_PHOTO_USD,
   PHOTOS_PER_SITE,
 } from "@admin/lib/places/pricing";
-import { DATA_FILE, DESIGN_SKILL, runSiteAgent } from "./agent";
-import { chooseDirection, parseDirection, type Direction } from "./direction";
+import { DATA_FILE, DESIGN_SKILL, STYLE_FILE, runSiteAgent, type ReferencePhoto } from "./agent";
+import {
+  chooseDirection,
+  parseDirection,
+  parseStyleReading,
+  type Direction,
+} from "./direction";
 import { prepareSandbox } from "./sandbox";
 import { INDEX_FILE, siteSlug, workDir } from "./paths";
 
@@ -272,14 +277,13 @@ async function execute(
 
   // Photos are re-fetched even on a cache hit: only the JSON is stored, and the
   // files live in a directory this build just deleted.
-  const photos = await fetchPlacePhotos(details.photos, PHOTOS_PER_SITE);
+  const photos = await fetchPlacePhotos(details.photos, business.name, PHOTOS_PER_SITE);
   costUsd += photos.length * COST_PER_PHOTO_USD;
 
-  const photoPaths: string[] = [];
+  const referencePhotos: ReferencePhoto[] = [];
   for (const photo of photos) {
-    const file = path.join(work, photo.file);
-    await fs.writeFile(file, photo.bytes);
-    photoPaths.push(file);
+    await fs.writeFile(path.join(work, photo.file), photo.bytes);
+    referencePhotos.push({ file: photo.file, source: photo.source });
   }
 
   // What the agent reads. Our own columns come along because they carry
@@ -298,9 +302,9 @@ async function execute(
       websiteClass: business.websiteClass,
     },
     placeDetails: details,
-    // Paths only, and only so the agent can look at them. They are research
-    // material for the design, not assets for the page.
-    referencePhotos: photoPaths,
+    // Filenames only, and only so the agent can look at them. They are
+    // research material for the design, not assets for the page.
+    referencePhotos,
   };
 
   const dataFile = path.join(work, DATA_FILE);
@@ -322,7 +326,17 @@ async function execute(
   // may only assert what is somewhere in here.
   const sourceText = JSON.stringify(payload);
 
-  const result = await runSiteAgent(work, dataFile, photoPaths, sourceText, direction);
+  const result = await runSiteAgent(
+    work,
+    dataFile,
+    referencePhotos,
+    sourceText,
+    direction,
+    // So the lead page can say whether Claude is designing or checking.
+    async (stage) => {
+      await db.update(siteBuilds).set({ status: stage }).where(eq(siteBuilds.id, buildId));
+    },
+  );
 
   if (!result.ok) {
     buildLog.error("build.failed", { error: result.error });
@@ -338,6 +352,20 @@ async function execute(
   // after runSiteAgent has checked it for images and invented years. Publishing
   // keeps the business's existing id, so links already sent keep working.
   const html = await fs.readFile(path.join(work, INDEX_FILE), "utf8");
+
+  // What the agent concluded from the photos: whether the page took its
+  // colours from the real place or fell back to the chosen palette. Kept with
+  // the direction so the panel can say which, and so it can be audited later.
+  const style = parseStyleReading(
+    await fs.readFile(path.join(work, STYLE_FILE), "utf8").catch(() => null),
+  );
+  if (style) {
+    await db
+      .update(siteBuilds)
+      .set({ direction: JSON.stringify({ ...direction, style }) })
+      .where(eq(siteBuilds.id, buildId));
+    buildLog.info("style.read", { mode: style.mode, identity: style.identity, type: style.type });
+  }
   const demoId = await publishDemo(business.id, buildId, html);
   const link = demoUrl(demoId);
 

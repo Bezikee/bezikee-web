@@ -40,10 +40,12 @@ export const COST_PER_DETAILS_REQUEST_USD = 0.025;
 export const COST_PER_PHOTO_USD = 0.007;
 
 /**
- * Photos pulled per business. Enough for a hero image and a small gallery;
- * past this the page gets slower without getting more convincing.
+ * Photos pulled per business, for the agent to study — they never go on the
+ * page. Enough that the storefront and the interior are usually among them
+ * (the business's own uploads come first, see `rankPhotos`); each one is a
+ * billed request and costs the agent context to look at.
  */
-export const PHOTOS_PER_SITE = 6;
+export const PHOTOS_PER_SITE = 8;
 
 /** What one generated site costs in API calls, before any Claude tokens. */
 export function siteBuildCostUsd(photos: number = PHOTOS_PER_SITE): number {

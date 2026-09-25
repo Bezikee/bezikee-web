@@ -176,7 +176,7 @@ export const PALETTES: Palette[] = [
   { key: "nightblue", label: "Night blue & amber", band: "dark", brief: "Midnight-blue ground, amber lamplight accent, warm off-white text.", affinity: { food: 1.2, services: 1.1 } },
   { key: "saffron", label: "Saffron & charcoal", band: "mid", brief: "Saffron and mustard fields against charcoal type, a hot tomato accent.", affinity: { food: 1.3, trades: 1.2 } },
   { key: "olive", label: "Olive & linen", band: "light", brief: "Linen paper, olive and sage tones, a dark olive-black ink.", affinity: { food: 1.2, health: 1.2, retail: 1.2 } },
-  { key: "plum", label: "Plum & blush", band: "mid", brief: "Blush and powder tones with deep plum type and a single plum accent.", affinity: { beauty: 1.5, food: 0.8, trades: 0.5 } },
+  { key: "plum", label: "Plum & blush", band: "mid", brief: "Blush and powder tones with deep plum type and a single plum accent.", affinity: { beauty: 1.5, food: 0.8, trades: 0.3 } },
   { key: "signal", label: "Paper & signal red", band: "light", brief: "Newsprint white and true black, one signal-red accent used sparingly.", affinity: { trades: 1.4, services: 1.3 } },
   { key: "azulejo", label: "Azulejo blue", band: "light", brief: "Chalk white with azulejo cobalt and a pale sky tint, like Spanish tile.", affinity: { food: 1.2, health: 1.2, retail: 1.1 } },
   { key: "cocoa", label: "Cocoa & cream", band: "mid", brief: "Cream and caramel with cocoa-brown type and a rich chocolate ground for one section.", affinity: { food: 1.4, beauty: 1.1 } },
@@ -190,7 +190,7 @@ export const TYPE_PAIRINGS: TypePairing[] = [
     display: `Didot, "Bodoni 72", "Bodoni MT", "Playfair Display", serif`,
     body: `"Avenir Next", Avenir, "Segoe UI", sans-serif`,
     brief: "High-contrast Didone display with a clean geometric-humanist body — fashion-magazine poise.",
-    affinity: { beauty: 1.5, retail: 1.2, trades: 0.5 },
+    affinity: { beauty: 1.5, retail: 1.2, trades: 0.3 },
   },
   {
     key: "slab", label: "Clarendon + Charter", style: "slab",
@@ -282,13 +282,37 @@ export type Direction = {
   layout: string;
   hero: string;
   footer: string;
+  /** Fallback palette: used only when the photos show no clear identity. */
   palette: string;
+  /** Default type pairing. */
   type: string;
+  /**
+   * Other pairings the agent may pick instead, when the business's signage or
+   * character clearly suits one better. Still from the catalogue, so they are
+   * faces the page can actually use.
+   */
+  typeAlternates?: string[];
   motion: string;
   ornament: string;
+  /** What the agent read from the photos, recorded after the build. */
+  style?: StyleReading;
 };
 
-type Dimension = keyof Direction;
+/**
+ * The agent's reading of the photos, written to style.json in its sandbox.
+ * `match` means the page takes its colours from the real place; `improvise`
+ * means the photos showed no clear identity and the fallback palette was used.
+ */
+export type StyleReading = {
+  mode: "match" | "improvise";
+  identity: string;
+  colours: string[];
+  type: string;
+  photos: { file: string; kind: string; useful: boolean }[];
+};
+
+/** The choices that rotate between builds. */
+type Dimension = "layout" | "hero" | "footer" | "palette" | "type" | "motion" | "ornament";
 
 /**
  * How many recent builds each choice must avoid. Just under half of each
@@ -319,14 +343,24 @@ function weighted<T>(items: { item: T; weight: number }[], random: () => number)
  * recent builds used. If avoidance would leave nothing, it relaxes rather than
  * fails — variety is a preference, a page is a requirement.
  */
+/**
+ * Below this an option is a poor fit for the business — graphite and safety
+ * yellow for a bar — and is left out rather than merely made unlikely. Rare
+ * mismatches still happen when every draw is rolled; for a page shown to an
+ * owner, one is too many.
+ */
+const POOR_FIT = 0.5;
+
 function choose<T extends { key: string }>(
   options: T[],
   avoid: Set<string>,
   weight: (option: T) => number,
   random: () => number,
 ): T {
-  const fresh = options.filter((option) => !avoid.has(option.key));
-  const pool = fresh.length > 0 ? fresh : options;
+  const suitable = options.filter((option) => weight(option) >= POOR_FIT);
+  const candidates = suitable.length > 0 ? suitable : options;
+  const fresh = candidates.filter((option) => !avoid.has(option.key));
+  const pool = fresh.length > 0 ? fresh : candidates;
   return weighted(
     pool.map((item) => ({ item, weight: Math.max(weight(item), 0.01) })),
     random,
@@ -360,12 +394,19 @@ export function chooseDirection(
   const heroOptions = layout.heroes.map((key) => ({ key }));
   const hero = choose(heroOptions, heroAvoid, () => 1, random);
 
-  const type = choose(
-    TYPE_PAIRINGS,
-    avoid("type"),
-    (o) => suits(o.affinity) * (layout.prefersType?.includes(o.style) ? 1.6 : 1),
-    random,
-  );
+  const typeWeight = (o: TypePairing) =>
+    suits(o.affinity) * (layout.prefersType?.includes(o.style) ? 1.6 : 1);
+  const type = choose(TYPE_PAIRINGS, avoid("type"), typeWeight, random);
+
+  // Two alternates in other styles, so matching a shop's lettering is a real
+  // choice (a slab, a didone, a condensed sans) rather than three of a kind.
+  const alternates: TypePairing[] = [];
+  for (let i = 0; i < 2; i++) {
+    const taken = new Set([type.style, ...alternates.map((a) => a.style)]);
+    const pool = TYPE_PAIRINGS.filter((o) => o.key !== type.key && !taken.has(o.style));
+    if (pool.length === 0) break;
+    alternates.push(choose(pool, avoid("type"), typeWeight, random));
+  }
 
   // A dark page following a dark page reads as the same page, whatever the hue.
   const lastBand = PALETTES.find((p) => p.key === (previous ?? recent[0])?.palette)?.band;
@@ -386,9 +427,43 @@ export function chooseDirection(
     footer: footer.key,
     palette: palette.key,
     type: type.key,
+    typeAlternates: alternates.map((a) => a.key),
     motion: motion.key,
     ornament: ornament.key,
   };
+}
+
+const MODES = new Set(["match", "improvise"]);
+
+/**
+ * Parse the agent's style.json. It is model output, so anything malformed is
+ * dropped rather than trusted: the build still stands, just without a reading.
+ */
+export function parseStyleReading(raw: string | null | undefined): StyleReading | null {
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>;
+    if (!value || typeof value !== "object" || !MODES.has(value.mode as string)) return null;
+    const text = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : "");
+    return {
+      mode: value.mode as StyleReading["mode"],
+      identity: text(value.identity, 400),
+      colours: Array.isArray(value.colours)
+        ? value.colours
+            .filter((c): c is string => typeof c === "string" && /^#[0-9a-f]{3,8}$/i.test(c))
+            .slice(0, 8)
+        : [],
+      type: TYPE_PAIRINGS.some((t) => t.key === value.type) ? (value.type as string) : "",
+      photos: Array.isArray(value.photos)
+        ? value.photos.slice(0, 12).map((photo) => {
+            const p = (photo ?? {}) as Record<string, unknown>;
+            return { file: text(p.file, 60), kind: text(p.kind, 30), useful: Boolean(p.useful) };
+          })
+        : [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ----------------------------------------------------------------- describing
@@ -409,12 +484,16 @@ export function parseDirection(raw: string | null | undefined): Direction | null
   }
 }
 
-/** "Letter · Terracotta & bone · Didot + Avenir", for the admin panel. */
+/**
+ * "Letter · Terracotta & bone · Didot + Avenir" for the admin panel, or
+ * "Letter · Colours from their photos · …" when the page matched the place.
+ */
 export function describeDirection(direction: Direction): string {
+  const style = direction.style;
   return [
     byKey(LAYOUTS, direction.layout)?.label,
-    byKey(PALETTES, direction.palette)?.label,
-    byKey(TYPE_PAIRINGS, direction.type)?.label,
+    style?.mode === "match" ? "Colours from their photos" : byKey(PALETTES, direction.palette)?.label,
+    byKey(TYPE_PAIRINGS, style?.type || direction.type)?.label,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -425,6 +504,9 @@ export function directionBrief(direction: Direction): string {
   const layout = byKey(LAYOUTS, direction.layout)!;
   const type = byKey(TYPE_PAIRINGS, direction.type)!;
   const palette = byKey(PALETTES, direction.palette)!;
+  const alternates = (direction.typeAlternates ?? [])
+    .map((key) => byKey(TYPE_PAIRINGS, key))
+    .filter((alt): alt is TypePairing => Boolean(alt));
 
   return `## Art direction for THIS page — already decided, follow it
 
@@ -437,15 +519,21 @@ log; there is no one to ask. Everything else about designing well is still yours
 - **Layout:** ${layout.label} (Hallmark macrostructure \`${layout.macrostructure}\`). ${layout.brief}
 - **Hero:** ${HEROES[direction.hero]}.
 - **Footer:** ${byKey(FOOTERS, direction.footer)!.brief}
-- **Palette:** ${palette.label} — ${palette.brief} Build a full token set from it
-  (surfaces, ink, one accent, tonal steps). Let the reference photos pull the
-  exact tones toward the real place, but stay in this family.
+- **Palette:** comes from the photo study below. **Fallback**, used only if the
+  photos show no clear identity: ${palette.label} — ${palette.brief} Either way,
+  build a full token set (surfaces, ink, one accent, tonal steps).
 - **Type:** ${type.label} — ${type.brief}
   - display: \`font-family: ${type.display}\`
-  - body: \`font-family: ${type.body}\`
+  - body: \`font-family: ${type.body}\`${alternates
+    .map(
+      (alt) => `
+  - *or, only if the photos' signage or character clearly calls for it:* ${alt.label} — ${alt.brief}
+    display \`${alt.display}\` · body \`${alt.body}\``,
+    )
+    .join("")}
 - **Signature motion:** ${byKey(MOTIONS, direction.motion)!.brief}
 - **Ornament:** ${byKey(ORNAMENTS, direction.ornament)!.brief}
 
 Stamp the top of the stylesheet with
-\`/* Hallmark · macrostructure: ${layout.label} · hero: ${direction.hero} · footer: ${direction.footer} · palette: ${palette.label} · type: ${type.label} */\`.`;
+\`/* Hallmark · macrostructure: ${layout.label} · hero: ${direction.hero} · footer: ${direction.footer} · palette: <from photos, or ${palette.label}> · type: <the pairing you used> */\`.`;
 }
