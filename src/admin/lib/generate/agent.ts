@@ -184,6 +184,16 @@ real brand sites, and build it like someone senior too.
 - Then look at it as the owner: is there one moment that would make them say
   "that's nice"? If not, it is not finished.
 
+## Your tools
+
+You have file tools and a shell, but you are in a locked sandbox: you can only
+write inside the current directory, there is no network, and nothing outside
+this directory and the photos listed above is readable. There is no browser —
+don't try to screenshot the page. Use \`node\` or \`python3\` when a
+calculation helps, above all to check real WCAG contrast ratios for every
+text/background pair in your palette. Anything the sandbox refuses is refused
+for good; don't look for a way around it.
+
 ## Hard constraints — these override the skill wherever they conflict
 
 - Write ONE file, \`${INDEX_FILE}\`, in the current directory.
@@ -209,8 +219,63 @@ Take the time to do this properly.`;
 }
 
 /**
+ * The command line for one build.
+ *
+ * Every permission is decided up front, because nobody is there to answer a
+ * prompt: `dontAsk` denies anything not listed here outright, and the agent is
+ * told a denial is final rather than left to keep trying.
+ *
+ * - Read, and the design skill.
+ * - File edits only inside the scratch directory. `Edit(./**)` rather than a
+ *   bare `Write`: tested, a bare `Write` allow lets the Write tool create files
+ *   anywhere not explicitly denied; the scoped rule confines it (and Claude
+ *   Code checks every file-writing tool against Edit rules).
+ * - Bash, which the OS-level sandbox in the settings file confines — see
+ *   sandbox.ts. It lets the agent check its own work instead of guessing.
+ * - No web tools, and no MCP servers or claude.ai connectors at all.
+ */
+export function agentArgs(prompt: string, settingsFile: string): string[] {
+  return [
+    "-p",
+    prompt,
+    "--permission-mode",
+    "dontAsk",
+    "--allowedTools",
+    "Read,Edit(./**),Skill,Bash",
+    "--disallowedTools",
+    "WebFetch,WebSearch",
+    "--strict-mcp-config",
+    "--mcp-config",
+    JSON.stringify({ mcpServers: {} }),
+    "--settings",
+    settingsFile,
+  ];
+}
+
+/**
+ * Only what the CLI needs to start and find its tools.
+ *
+ * The dev server's environment holds DATABASE_URL (with the database
+ * password), GOOGLE_MAPS_API_KEY and more. The agent now has a shell, and the
+ * sandbox guards files, not variables, so a copy of that environment would
+ * make every secret one `echo` away. Tested: the variable came straight back.
+ * Claude Code's own login is in the macOS keychain and needs none of it.
+ */
+const PASSED_ENV = ["HOME", "PATH", "USER", "LOGNAME", "SHELL", "LANG", "LC_ALL", "TMPDIR", "TERM"];
+
+export function agentEnv(env: NodeJS.ProcessEnv): Record<string, string> {
+  const kept: Record<string, string> = {};
+  for (const key of PASSED_ENV) {
+    const value = env[key];
+    if (value !== undefined) kept[key] = value;
+  }
+  return kept;
+}
+
+/**
  * Run the agent inside `sandbox`, which must already hold the data file, the
- * photos, a `.claude/skills/<name>` copy and a settings file. It writes
+ * photos and a `.claude/skills/<name>` copy, with its settings file beside it
+ * (see `prepareSandbox`). It writes
  * `index.html` there; the caller copies that out. Resolves whether or not the
  * agent succeeded — the caller decides what a failure means.
  */
@@ -223,23 +288,7 @@ export async function runSiteAgent(
 ): Promise<AgentResult> {
   const prompt = buildPrompt(dataFile, SKILL_NAME, photoPaths, direction);
 
-  const args = [
-    "-p",
-    prompt,
-    // File tools plus Skill, so the design skill can be invoked by name and
-    // load its own reference library. No Bash: nothing here runs a command, and
-    // withholding it leaves a prompt injection in a review nothing to reach for.
-    "--allowedTools",
-    "Write,Read,Edit,Skill",
-    "--permission-mode",
-    "acceptEdits",
-    // The part that actually confines it. `acceptEdits` never prompts for
-    // reads, so the working directory is not a boundary — only these rules are.
-    // Verified: without them the agent reads .env.local from a sandbox outside
-    // the repo, given nothing but the absolute path.
-    "--settings",
-    settingsPath(sandbox),
-  ];
+  const args = agentArgs(prompt, settingsPath(sandbox));
 
   log.info("agent.start", {
     sandbox: path.basename(sandbox),
@@ -255,7 +304,8 @@ export async function runSiteAgent(
       // stdin closed: headless, and an agent waiting on input would otherwise
       // sit here until the timeout.
       stdio: ["ignore", "pipe", "pipe"],
-      env: { ...process.env },
+      // Cast only because Next types ProcessEnv with a required NODE_ENV.
+      env: agentEnv(process.env) as NodeJS.ProcessEnv,
     });
 
     let out = "";
