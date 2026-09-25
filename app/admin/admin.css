@@ -1,0 +1,64 @@
+/*
+ * Admin panel theme. Everything is scoped under .admin-theme, which only the admin layout
+ * sets, so none of it reaches the marketing pages.
+ *
+ * Colours are RGB channels so Tailwind's opacity modifiers work on them (see the admin
+ * entries in tailwind.config.js). A few inline styles need a whole colour, so --accent and
+ * the funnel ramp are also exposed as complete values.
+ *
+ * Bezikee's palette: near-black surfaces, zinc lines, neon green as the one accent. The
+ * accent is too bright to carry white text, so buttons use dark ink on green.
+ */
+.admin-theme {
+  --admin-surface: 10 10 10;
+  --admin-card: 24 24 27;
+  --admin-card-muted: 32 32 36;
+  --admin-border: 39 39 42;
+  --admin-border-strong: 63 63 70;
+
+  --admin-text: 250 250 250;
+  --admin-text-secondary: 212 212 216;
+  --admin-text-muted: 161 161 170;
+
+  --admin-accent: 16 185 129;
+  --admin-accent-hover: 52 211 153;
+  --admin-accent-soft: 6 44 34;
+  --admin-accent-ink: 4 18 13;
+
+  --admin-good: 74 222 128;
+  --admin-warning: 250 178 25;
+  --admin-serious: 236 131 90;
+  --admin-critical: 248 113 113;
+
+  --admin-track: 39 39 42;
+  --admin-grid: 32 32 36;
+
+  --accent: rgb(var(--admin-accent));
+
+  /* Pipeline stages are ordered, so they get an ordinal ramp: lightest first, every step
+     still clear of the dark card behind it. */
+  --funnel-1: #a7f3d0;
+  --funnel-2: #6ee7b7;
+  --funnel-3: #34d399;
+  --funnel-4: #10b981;
+  --funnel-5: #059669;
+
+  background: rgb(var(--admin-surface));
+  color: rgb(var(--admin-text));
+  color-scheme: dark;
+}
+
+/* Columns of numbers must align; large standalone values must not. */
+.admin-theme .tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-theme ::selection {
+  background: rgb(var(--admin-accent) / 0.3);
+}
+
+/* Recessive focus ring that still clears contrast on the dark surfaces. */
+.admin-theme :where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid rgb(var(--admin-accent));
+  outline-offset: 2px;
+}

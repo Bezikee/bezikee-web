@@ -1,13 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
-import { Header } from '../src/components/Header'
-import { Footer } from '../src/components/Footer'
-import { NeonParticles } from '../src/components/NeonParticles'
-import { CustomCursor } from '../src/components/CustomCursor'
-import { ScrollProgress } from '../src/components/ScrollProgress'
-import { PageTransition } from '../src/components/PageTransition'
 import { SITE_NAME, SITE_URL } from '../src/seo'
 import './globals.css'
 
@@ -25,26 +17,12 @@ export const metadata: Metadata = {
   title: { default: `${SITE_NAME} - Software Development Agency`, template: `%s` },
 }
 
+// Shared by the public site and the admin panel, so it holds only what both need. The
+// site's header, footer and effects are in app/(site)/layout.tsx via SiteChrome.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body>
-        <div className="min-h-screen bg-dark-bg font-inter relative">
-          <CustomCursor />
-          <ScrollProgress />
-          <NeonParticles />
-
-          <div className="relative z-10">
-            <Header />
-            <main>
-              <PageTransition>{children}</PageTransition>
-            </main>
-            <Footer />
-          </div>
-        </div>
-        <Analytics />
-        <SpeedInsights />
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

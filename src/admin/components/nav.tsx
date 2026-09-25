@@ -1,0 +1,73 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/admin/", label: "Overview" },
+  { href: "/admin/scrape/", label: "Scrape" },
+  { href: "/admin/leads/", label: "Leads" },
+  { href: "/admin/settings/", label: "Settings" },
+] as const;
+
+/** `/admin/leads/12/` → `/admin/leads/12`, so matching doesn't depend on the slash. */
+const trim = (path: string) => (path.length > 1 ? path.replace(/\/+$/, "") : path);
+
+export function Nav({ showSignOut = false }: { showSignOut?: boolean }) {
+  const pathname = trim(usePathname());
+
+  // The login page is the one screen you reach without being signed in, and
+  // every link here would bounce straight back to it.
+  if (pathname === "/admin/login") return null;
+
+  return (
+    <nav className="shrink-0 border-line bg-card lg:flex lg:flex-col lg:w-56 lg:border-r border-b lg:border-b-0">
+      <div className="flex items-center gap-2 px-5 py-4 lg:py-5">
+        <span
+          aria-hidden
+          className="grid size-7 place-items-center rounded-md bg-accent text-[13px] font-bold text-accent-ink"
+        >
+          B
+        </span>
+        <span className="text-[15px] font-semibold tracking-tight">Bezikee Admin</span>
+      </div>
+
+      <ul className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:pb-4">
+        {LINKS.map((link) => {
+          const href = trim(link.href);
+          const active =
+            href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+
+          return (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={`block whitespace-nowrap rounded-md px-3 py-2 text-sm transition-colors ${
+                  active
+                    ? "bg-accent-soft font-medium text-accent"
+                    : "text-ink-secondary hover:bg-card-muted hover:text-ink"
+                }`}
+              >
+                {link.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Only when a password is actually configured — locally there is no
+          session to end, so the button would do nothing. */}
+      {showSignOut ? (
+        <form action="/api/admin/logout/" method="post" className="px-3 pb-4 lg:mt-auto">
+          <button
+            type="submit"
+            className="w-full rounded-md px-3 py-2 text-left text-sm text-ink-muted transition-colors hover:bg-card-muted hover:text-ink"
+          >
+            Sign out
+          </button>
+        </form>
+      ) : null}
+    </nav>
+  );
+}
