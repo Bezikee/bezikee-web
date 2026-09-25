@@ -6,6 +6,7 @@ import { demoIdFor } from "@admin/lib/demo/store";
 import { demoUrl } from "@admin/lib/demo/url";
 import { leads, siteBuilds } from "@admin/lib/db/schema";
 import { isAgentAvailable } from "@admin/lib/generate/agent";
+import { describeDirection, parseDirection } from "@admin/lib/generate/direction";
 import { isBuildRunning, startSiteBuild } from "@admin/lib/generate/runner";
 import { logger } from "@admin/lib/log";
 import { hasApiKey } from "@admin/lib/places/client";
@@ -32,6 +33,7 @@ async function latestBuild(businessId: number) {
       status: siteBuilds.status,
       photoCount: siteBuilds.photoCount,
       costUsd: siteBuilds.costUsd,
+      direction: siteBuilds.direction,
       error: siteBuilds.error,
       createdAt: siteBuilds.createdAt,
       finishedAt: siteBuilds.finishedAt,
@@ -62,8 +64,12 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/admin/leads
     isAgentAvailable(),
   ]);
 
+  const direction = parseDirection(build?.direction);
+
   return NextResponse.json({
-    build,
+    build: build ? { ...build, direction: undefined } : null,
+    // "Letter · Terracotta & bone · Didot + Avenir": which look this page got.
+    look: direction ? describeDirection(direction) : null,
     // The published page, which outlives any one build: a failed rebuild leaves
     // the previous version up at the same address.
     demoUrl: demoId ? demoUrl(demoId) : null,
