@@ -56,8 +56,11 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/admin/leads
     return NextResponse.json({ error: "Lead not found" }, { status: 404 });
   }
 
-  const build = await latestBuild(businessId);
-  const demoId = await demoIdFor(businessId);
+  const [build, demoId, agentAvailable] = await Promise.all([
+    latestBuild(businessId),
+    demoIdFor(businessId),
+    isAgentAvailable(),
+  ]);
 
   return NextResponse.json({
     build,
@@ -67,7 +70,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/admin/leads
     live: isBuildRunning(businessId),
     // Drives whether the button is offered at all. The CLI is on a laptop, not
     // in a Vercel function, so the same page has to render both ways.
-    available: (await isAgentAvailable()) && hasApiKey(),
+    available: agentAvailable && hasApiKey(),
     estimatedCostUsd: siteBuildCostUsd(),
   });
 }

@@ -28,11 +28,15 @@ export default async function LeadsPage(props: PageProps<"/admin/leads">) {
 
   const filters = parseLeadFilters(params);
   const page = Math.max(1, Number(params.get("page")) || 1);
-  const total = await countLeads(filters);
-  const rows = await queryLeads(filters, PAGE_SIZE, (page - 1) * PAGE_SIZE);
-  const { areas } = await filterOptions();
-  const stats = await summarizeLeads(filters);
-  const settings = await getSettings();
+  // Independent reads, sent together: the database is a network hop away, so
+  // awaiting them one by one made the page wait for each round trip in turn.
+  const [total, rows, { areas }, stats, settings] = await Promise.all([
+    countLeads(filters),
+    queryLeads(filters, PAGE_SIZE, (page - 1) * PAGE_SIZE),
+    filterOptions(),
+    summarizeLeads(filters),
+    getSettings(),
+  ]);
 
   const firstOnPage = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const lastOnPage = Math.min(page * PAGE_SIZE, total);
