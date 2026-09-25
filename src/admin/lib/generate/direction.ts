@@ -77,19 +77,19 @@ export const LAYOUTS: Layout[] = [
     macrostructure: "12-letter.md",
     heroes: ["H5"],
     brief:
-      "The page is a short letter to a neighbour who hasn't visited yet — first person plural, warm, written. Reviews appear as quoted replies; hours and address close it like a signature block.",
+      "The page is a short letter to a neighbour who hasn't visited yet — first person plural, warm, a handful of lines, never an essay. Reviews appear large as quoted replies; hours and address close it like a signature block, set as a designed card rather than prose.",
     prefersType: ["serif", "typewriter"],
     affinity: { food: 1.3, retail: 1.2, trades: 0.8 },
   },
   {
-    key: "long-document",
-    label: "Long document",
-    macrostructure: "02-long-document.md",
-    heroes: ["H1", "H5"],
+    key: "map",
+    label: "Map & diagram",
+    macrostructure: "19-map-diagram.md",
+    heroes: ["H1", "H9"],
     brief:
-      "Reads like a short magazine profile of the place: a headline, a standfirst, continuous prose with inline section heads, reviews as pull quotes in the margin.",
-    prefersType: ["serif", "didone"],
-    affinity: { food: 1.2, retail: 1.2 },
+      "Show the business in its place instead of describing it: below the hero, a hand-drawn SVG map of the block with the shop marked and a landmark or two, the week's opening hours as a diagram rather than a table, and the reviews pinned around the map. Information laid out spatially, not as paragraphs.",
+    prefersType: ["sans", "condensed", "slab"],
+    affinity: { food: 1.1, trades: 1.2, services: 1.2, retail: 1.1 },
   },
   {
     key: "split",

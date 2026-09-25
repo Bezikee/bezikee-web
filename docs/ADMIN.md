@@ -56,8 +56,9 @@ everyone else sees the link in the panel.
    (`src/admin/skills/hallmark`) and the art direction.
 3. **Review, up to twice.** Our own code opens the page in headless Chrome, served with
    the same headers as demo.bezikee.com, and takes phone and laptop screenshots of the
-   first screen and the whole page. It also measures sideways scroll and whether the
-   call button is on the first screen. The same agent session resumes, looks at the
+   first screen and the whole page. It also measures sideways scroll, whether the
+   call button is on the first screen, sections that hug one side of a laptop screen,
+   sections that are only text, and the page's word count (budget: 350). The same agent session resumes, looks at the
    screenshots and fixes the page. Invented years and image references also go back for
    fixing rather than failing the build straight away.
 4. **Publish.** The page must pass the hard checks, then it goes live on
