@@ -8,7 +8,7 @@ import path from "node:path";
 import { logger } from "@admin/lib/log";
 import { TYPE_PAIRINGS, describeDirection, directionBrief, type Direction } from "./direction";
 import { INDEX_FILE } from "./paths";
-import { capturePreview, type Preview } from "./preview";
+import { WORD_BUDGET, capturePreview, type Preview } from "./preview";
 import { settingsPath } from "./sandbox";
 
 const log = logger("generate.agent");
@@ -117,7 +117,9 @@ once they say yes.
 
 So keep the content deliberately spare. It should look like a confident,
 finished landing page that happens to be short, not like a site with the
-contents missing.
+contents missing. **Stay under ${WORD_BUDGET} words for the whole page**,
+reviews and hours included, with no passage of your own over about 60 words.
+The build measures this. A pitch the owner has to read is a pitch they skim.
 
 **Put on the page, and little else:**
 
@@ -125,8 +127,8 @@ contents missing.
 - One line saying what kind of place it is, in the owner's register.
 - The Google rating and how many people left it — their hard-won reputation.
 - Two or three real reviews, quoted properly, with the reviewer's name.
-- A short passage on the character of the place: how long it has been there,
-  the kind of welcome, the neighbourhood. Atmosphere, not inventory.
+- A few lines on the character of the place: the kind of welcome, the
+  neighbourhood. Atmosphere, not inventory — and not an essay.
 - Opening hours, address, a Maps link, and a phone button that works.
 
 **Do NOT put on the page:**
@@ -178,6 +180,15 @@ real brand sites, and build it like someone senior too.
 - **Don't fall back on a house style.** No centred-everything hero with a
   pill button under it, no "three cards in a row", no gradient text. If a choice
   feels like the obvious default, it is the one every other page already made.
+
+- **Compose the whole width.** On a laptop every section must be composed
+  across the screen: centre its container (\`margin-inline: auto\`) or make it
+  asymmetric with something on *both* sides. A text column pinned left with the
+  right third of the screen empty looks unfinished, and the build measures it.
+
+- **Every section has something to look at**, not just paragraphs: a drawn
+  element, the rating or an opening hour as a big numeral, a pattern from the
+  place, a review set large. If a section is only text, it is not designed yet.
 
 - Then look at it as the owner: is there one moment that would make them say
   "that's nice"? If not, it is not finished.
@@ -284,7 +295,10 @@ bulbs, cold daylight, neon), an era or mood you could name.
   many tones to use, not which. Pick whichever of the offered type pairings best
   echoes the sign's lettering and the place's character. Let the ornament echo
   a real motif (their tiles, their sign's frame, the chair, the awning), drawn
-  in SVG — never traced from a photo.
+  in SVG — never traced from a photo. Translate, don't transcribe: a striped
+  wall can become stripes, but don't reproduce building structure — a ceiling
+  edge, a beam, a skirting board — as bars and lines. On a page they read as
+  rendering mistakes, not as the shop.
 - **If they don't — mode "improvise".** Food close-ups, customer selfies, dark
   or blurry shots, or nothing that shows the place itself: use the fallback
   palette and default type as given, tuned to the trade and to what the Google
@@ -582,6 +596,11 @@ ${mustFix.map((item) => `- ${item}`).join("\n")}
   contrast of anything that looks faint.
 - Is the rhythm of the page composed — varied section spacing, tone shifting
   down the page — or does it read as stacked boxes?
+- On the laptop whole-page shot: does every section use the width, or does
+  content hug one side with the rest empty? Is any section only text? Is there
+  more to read than the owner would bother with?
+- Is there anything that looks like a mistake rather than a decision — a stray
+  bar or line, a clipped shape, a block of colour that doesn't belong?
 - Is there one moment the owner would stop at and say "that's nice"?
 - Run the ${SKILL_NAME} skill's slop test against what you see.
 

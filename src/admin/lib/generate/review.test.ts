@@ -5,7 +5,13 @@ import { describe, expect, it } from "vitest";
 
 import { APPROVAL, pageProblems, reviewPrompt } from "./agent";
 import type { Direction } from "./direction";
-import { capturePreview, findChrome } from "./preview";
+import {
+  WORD_BUDGET,
+  capturePreview,
+  findChrome,
+  layoutFindings,
+  type BandAudit,
+} from "./preview";
 
 const DIRECTION: Direction = {
   layout: "letter",
@@ -142,4 +148,79 @@ describe.skipIf(!findChrome())("capturePreview", () => {
     const { preview } = await render(scripted);
     expect(preview.findings.join("\n")).toMatch(/no working phone link/);
   }, 60_000);
+});
+
+describe("layoutFindings", () => {
+  const laptop = { name: "laptop", label: "laptop (1440×900)", width: 1440, height: 900, mobile: false };
+  const band = (over: Partial<BandAudit>): BandAudit => ({
+    label: "Pásate por el 72.",
+    top: 1200,
+    contentLeft: 200,
+    contentRight: 1240,
+    words: 40,
+    visuals: 1,
+    ...over,
+  });
+
+  it("passes a composed page", () => {
+    expect(layoutFindings({ width: 1440, words: 260, bands: [band({})] }, laptop)).toEqual([]);
+  });
+
+  it("flags content pinned to one side with the rest of the screen empty", () => {
+    // The reported page: a 64rem column with no margin-inline: auto.
+    const [finding] = layoutFindings(
+      { width: 1440, words: 260, bands: [band({ contentLeft: 72, contentRight: 1096 })] },
+      laptop,
+    );
+    expect(finding).toMatch(/"Pásate por el 72\." section only uses the left side/);
+    expect(finding).toMatch(/344px empty on the right/);
+    expect(finding).toMatch(/margin-inline: auto/);
+  });
+
+  it("doesn't flag a column that is narrow but centred", () => {
+    expect(
+      layoutFindings({ width: 1440, words: 260, bands: [band({ contentLeft: 420, contentRight: 1020 })] }, laptop),
+    ).toEqual([]);
+  });
+
+  it("flags a section that is only paragraphs", () => {
+    const findings = layoutFindings(
+      { width: 1440, words: 300, bands: [band({ label: "Aquí se viene durante años.", words: 257, visuals: 0 })] },
+      laptop,
+    );
+    expect(findings.join("\n")).toMatch(/257 words of text with nothing to look at/);
+  });
+
+  it("flags a page over the word budget", () => {
+    const findings = layoutFindings({ width: 1440, words: WORD_BUDGET + 116, bands: [] }, laptop);
+    expect(findings.join("\n")).toMatch(new RegExp(`${WORD_BUDGET + 116} words`));
+  });
+
+  it("stays quiet when there is nothing to audit", () => {
+    expect(layoutFindings(undefined, laptop)).toEqual([]);
+  });
+});
+
+// The audit itself, in a real browser, on the shape of the page that was reported.
+describe.skipIf(!findChrome())("layout audit in Chrome", () => {
+  const section = (css: string) => `<!doctype html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;font-family:Georgia,serif} header{height:100svh} .wrap{padding:3rem 72px} .col{${css}}</style>
+</head><body><header><h1>Teste Matte</h1><a href="tel:622123961">Llamar</a></header>
+<section class="wrap"><div class="col"><h2>Pásate por el 72.</h2><p>${"Lunes a sábado en pleno Arganzuela. ".repeat(4)}</p></div></section>
+</body></html>`;
+
+  const findingsFor = async (html: string) => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "audit-test-"));
+    try {
+      return (await capturePreview(html, dir))!.findings.join("\n");
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  };
+
+  it("catches a column pinned left, and clears once it is centred", async () => {
+    expect(await findingsFor(section("max-width:64rem"))).toMatch(/only uses the left side/);
+    expect(await findingsFor(section("max-width:64rem;margin-inline:auto"))).not.toMatch(/only uses/);
+  }, 90_000);
 });

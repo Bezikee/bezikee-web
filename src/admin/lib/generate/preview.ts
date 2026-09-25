@@ -148,6 +148,7 @@ export async function capturePreview(html: string, outDir: string): Promise<Prev
       shots.push({ file: fold, label: `${viewport.label}, first screen` });
 
       findings.push(...(await measure(cdp, viewport)));
+      if (!viewport.mobile) findings.push(...(await auditLayout(cdp, viewport)));
 
       // The whole page, with motion reduced so nothing is caught mid-reveal.
       await load(cdp, server.url, "reduce");
@@ -221,6 +222,174 @@ async function measure(cdp: Cdp, viewport: Viewport): Promise<string[]> {
 
   return findings;
 }
+
+/**
+ * Composition problems a model reviewing its own screenshots tends to
+ * approve: a section pinned to the left with the right of a laptop screen
+ * empty, sections that are nothing but paragraphs, and too many words for a
+ * pitch. Measured at laptop width, below the first screen — the hero is often
+ * asymmetric on purpose.
+ *
+ * This runs a script in the page, but it is ours, sent over DevTools, not the
+ * page's: the page's own scripts were disabled before it loaded and its CSP
+ * forbids them anyway. Script execution is switched back on only for this
+ * evaluation and off again straight after.
+ */
+async function auditLayout(cdp: Cdp, viewport: Viewport): Promise<string[]> {
+  await cdp.send("Emulation.setScriptExecutionDisabled", { value: false });
+  try {
+    const { result, exceptionDetails } = (await cdp.send("Runtime.evaluate", {
+      expression: `${LAYOUT_AUDIT_SCRIPT}(${viewport.height})`,
+      returnByValue: true,
+    })) as { result: { value?: LayoutAudit }; exceptionDetails?: { text?: string; exception?: { description?: string } } };
+    if (exceptionDetails) {
+      // Not thrown by CDP; it has to be looked for, or a broken audit just
+      // reports a perfect page.
+      throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text ?? "audit script failed");
+    }
+    return layoutFindings(result.value, viewport);
+  } catch (error) {
+    log.warn("audit.failed", { reason: error instanceof Error ? error.message : String(error) });
+    return [];
+  } finally {
+    await cdp.send("Emulation.setScriptExecutionDisabled", { value: true });
+  }
+}
+
+export type BandAudit = {
+  label: string;
+  top: number;
+  contentLeft: number;
+  contentRight: number;
+  words: number;
+  visuals: number;
+};
+
+export type LayoutAudit = { width: number; words: number; bands: BandAudit[] };
+
+/** Most words a pitch page should carry, reviews and hours included. */
+export const WORD_BUDGET = 350;
+
+/** A band with more words than this and nothing to look at is a wall of text. */
+const TEXT_ONLY_WORDS = 70;
+
+/** Turn raw measurements into findings the agent can act on. Pure, for tests. */
+export function layoutFindings(audit: LayoutAudit | undefined, viewport: Viewport): string[] {
+  if (!audit) return [];
+  const findings: string[] = [];
+  const width = audit.width;
+
+  for (const band of audit.bands) {
+    const emptyLeft = band.contentLeft;
+    const emptyRight = width - band.contentRight;
+    const where = band.label ? `the "${band.label}" section` : `the section ${Math.round(band.top)}px down`;
+
+    // Lopsided, not merely narrow: a centred 60rem column is fine; the same
+    // column pinned left, with a third of the screen empty beside it, is not.
+    if (emptyRight - emptyLeft > width * 0.15 && emptyRight > width * 0.22) {
+      findings.push(
+        `On a ${viewport.label}, ${where} only uses the left side: its content ends ${Math.round(band.contentRight)}px across, leaving ${Math.round(emptyRight)}px empty on the right. Centre the container (margin-inline: auto) or give the right side something that belongs there.`,
+      );
+    } else if (emptyLeft - emptyRight > width * 0.15 && emptyLeft > width * 0.22) {
+      findings.push(
+        `On a ${viewport.label}, ${where} only uses the right side, leaving ${Math.round(emptyLeft)}px empty on the left. Centre it or use that space.`,
+      );
+    }
+
+    if (band.words > TEXT_ONLY_WORDS && band.visuals === 0) {
+      findings.push(
+        `${where[0].toUpperCase()}${where.slice(1)} is ${band.words} words of text with nothing to look at. Cut it down and give it a visual — a drawn element, the rating as a big numeral, a pattern from the place, a pull quote set large.`,
+      );
+    }
+  }
+
+  if (audit.words > WORD_BUDGET) {
+    findings.push(
+      `The page carries ${audit.words} words; a pitch should stay under ${WORD_BUDGET}, reviews and hours included. It reads as a lot of text — cut the prose hardest.`,
+    );
+  }
+
+  return findings;
+}
+
+/**
+ * Evaluated inside the page. Plain source rather than a function passed
+ * through toString(): bundlers rewrite compiled functions (tsx injects a
+ * `__name` helper) and the page would receive code referring to things that
+ * only exist on our side. It finds the page's horizontal bands — the innermost
+ * elements spanning the viewport — and, for each one below the first screen,
+ * where its content actually sits, how many words it holds and how many
+ * visuals.
+ */
+const LAYOUT_AUDIT_SCRIPT = String.raw`(function (foldHeight) {
+  var vw = document.documentElement.clientWidth;
+  function visible(el) {
+    var style = getComputedStyle(el), rect = el.getBoundingClientRect();
+    return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+  }
+  function fullWidth(el) {
+    var rect = el.getBoundingClientRect();
+    return visible(el) && rect.width >= vw * 0.9 && rect.height >= 120;
+  }
+  function wordsIn(el) {
+    return (el.innerText || "").split(/\s+/).filter(function (w) { return /[\p{L}\p{N}]/u.test(w); }).length;
+  }
+
+  var candidates = Array.prototype.filter.call(document.body.querySelectorAll("*"), fullWidth);
+  // Innermost: a full-width element with no full-width element inside it.
+  var bands = candidates.filter(function (el) {
+    return !candidates.some(function (other) { return other !== el && el.contains(other); });
+  });
+
+  var out = [];
+  bands.forEach(function (band) {
+    var box = band.getBoundingClientRect();
+    // The hero starts on the first screen and is often asymmetric on purpose;
+    // judging by where a band starts, not ends, keeps a tall hero out of it.
+    if (box.top + window.scrollY < foldHeight * 0.5) return;
+
+    var left = Infinity, right = -Infinity, visuals = 0;
+
+    var walker = document.createTreeWalker(band, NodeFilter.SHOW_TEXT);
+    for (var node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent || !node.textContent.trim()) continue;
+      var range = document.createRange();
+      range.selectNodeContents(node);
+      Array.prototype.forEach.call(range.getClientRects(), function (rect) {
+        if (rect.width < 1) return;
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+      });
+    }
+
+    Array.prototype.forEach.call(band.querySelectorAll("*"), function (el) {
+      if (!visible(el)) return;
+      var rect = el.getBoundingClientRect(), area = rect.width * rect.height, style = getComputedStyle(el);
+      var graphic =
+        (el.tagName.toLowerCase() === "svg" && area > 2500) ||
+        (style.backgroundImage !== "none" && area > 10000 && rect.width < vw * 0.9) ||
+        (parseFloat(style.fontSize) >= 64 && (el.innerText || "").trim().length <= 6);
+      if (graphic) {
+        visuals++;
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+      }
+    });
+
+    if (right < left) return;
+    var heading = band.querySelector("h1, h2, h3");
+    out.push({
+      label: ((heading && heading.innerText) || "").trim().replace(/\s+/g, " ").slice(0, 60),
+      top: box.top + window.scrollY,
+      contentLeft: left,
+      contentRight: right,
+      words: wordsIn(band),
+      visuals: visuals
+    });
+  });
+
+  return { width: vw, words: wordsIn(document.body), bands: out };
+})`;
 
 // -------------------------------------------------------------- local server
 
