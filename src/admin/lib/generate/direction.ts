@@ -282,13 +282,37 @@ export type Direction = {
   layout: string;
   hero: string;
   footer: string;
+  /** Fallback palette: used only when the photos show no clear identity. */
   palette: string;
+  /** Default type pairing. */
   type: string;
+  /**
+   * Other pairings the agent may pick instead, when the business's signage or
+   * character clearly suits one better. Still from the catalogue, so they are
+   * faces the page can actually use.
+   */
+  typeAlternates?: string[];
   motion: string;
   ornament: string;
+  /** What the agent read from the photos, recorded after the build. */
+  style?: StyleReading;
 };
 
-type Dimension = keyof Direction;
+/**
+ * The agent's reading of the photos, written to style.json in its sandbox.
+ * `match` means the page takes its colours from the real place; `improvise`
+ * means the photos showed no clear identity and the fallback palette was used.
+ */
+export type StyleReading = {
+  mode: "match" | "improvise";
+  identity: string;
+  colours: string[];
+  type: string;
+  photos: { file: string; kind: string; useful: boolean }[];
+};
+
+/** The choices that rotate between builds. */
+type Dimension = "layout" | "hero" | "footer" | "palette" | "type" | "motion" | "ornament";
 
 /**
  * How many recent builds each choice must avoid. Just under half of each
@@ -370,12 +394,19 @@ export function chooseDirection(
   const heroOptions = layout.heroes.map((key) => ({ key }));
   const hero = choose(heroOptions, heroAvoid, () => 1, random);
 
-  const type = choose(
-    TYPE_PAIRINGS,
-    avoid("type"),
-    (o) => suits(o.affinity) * (layout.prefersType?.includes(o.style) ? 1.6 : 1),
-    random,
-  );
+  const typeWeight = (o: TypePairing) =>
+    suits(o.affinity) * (layout.prefersType?.includes(o.style) ? 1.6 : 1);
+  const type = choose(TYPE_PAIRINGS, avoid("type"), typeWeight, random);
+
+  // Two alternates in other styles, so matching a shop's lettering is a real
+  // choice (a slab, a didone, a condensed sans) rather than three of a kind.
+  const alternates: TypePairing[] = [];
+  for (let i = 0; i < 2; i++) {
+    const taken = new Set([type.style, ...alternates.map((a) => a.style)]);
+    const pool = TYPE_PAIRINGS.filter((o) => o.key !== type.key && !taken.has(o.style));
+    if (pool.length === 0) break;
+    alternates.push(choose(pool, avoid("type"), typeWeight, random));
+  }
 
   // A dark page following a dark page reads as the same page, whatever the hue.
   const lastBand = PALETTES.find((p) => p.key === (previous ?? recent[0])?.palette)?.band;
@@ -396,9 +427,43 @@ export function chooseDirection(
     footer: footer.key,
     palette: palette.key,
     type: type.key,
+    typeAlternates: alternates.map((a) => a.key),
     motion: motion.key,
     ornament: ornament.key,
   };
+}
+
+const MODES = new Set(["match", "improvise"]);
+
+/**
+ * Parse the agent's style.json. It is model output, so anything malformed is
+ * dropped rather than trusted: the build still stands, just without a reading.
+ */
+export function parseStyleReading(raw: string | null | undefined): StyleReading | null {
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>;
+    if (!value || typeof value !== "object" || !MODES.has(value.mode as string)) return null;
+    const text = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : "");
+    return {
+      mode: value.mode as StyleReading["mode"],
+      identity: text(value.identity, 400),
+      colours: Array.isArray(value.colours)
+        ? value.colours
+            .filter((c): c is string => typeof c === "string" && /^#[0-9a-f]{3,8}$/i.test(c))
+            .slice(0, 8)
+        : [],
+      type: TYPE_PAIRINGS.some((t) => t.key === value.type) ? (value.type as string) : "",
+      photos: Array.isArray(value.photos)
+        ? value.photos.slice(0, 12).map((photo) => {
+            const p = (photo ?? {}) as Record<string, unknown>;
+            return { file: text(p.file, 60), kind: text(p.kind, 30), useful: Boolean(p.useful) };
+          })
+        : [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ----------------------------------------------------------------- describing
@@ -419,12 +484,16 @@ export function parseDirection(raw: string | null | undefined): Direction | null
   }
 }
 
-/** "Letter · Terracotta & bone · Didot + Avenir", for the admin panel. */
+/**
+ * "Letter · Terracotta & bone · Didot + Avenir" for the admin panel, or
+ * "Letter · Colours from their photos · …" when the page matched the place.
+ */
 export function describeDirection(direction: Direction): string {
+  const style = direction.style;
   return [
     byKey(LAYOUTS, direction.layout)?.label,
-    byKey(PALETTES, direction.palette)?.label,
-    byKey(TYPE_PAIRINGS, direction.type)?.label,
+    style?.mode === "match" ? "Colours from their photos" : byKey(PALETTES, direction.palette)?.label,
+    byKey(TYPE_PAIRINGS, style?.type || direction.type)?.label,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -435,6 +504,9 @@ export function directionBrief(direction: Direction): string {
   const layout = byKey(LAYOUTS, direction.layout)!;
   const type = byKey(TYPE_PAIRINGS, direction.type)!;
   const palette = byKey(PALETTES, direction.palette)!;
+  const alternates = (direction.typeAlternates ?? [])
+    .map((key) => byKey(TYPE_PAIRINGS, key))
+    .filter((alt): alt is TypePairing => Boolean(alt));
 
   return `## Art direction for THIS page — already decided, follow it
 
@@ -447,15 +519,21 @@ log; there is no one to ask. Everything else about designing well is still yours
 - **Layout:** ${layout.label} (Hallmark macrostructure \`${layout.macrostructure}\`). ${layout.brief}
 - **Hero:** ${HEROES[direction.hero]}.
 - **Footer:** ${byKey(FOOTERS, direction.footer)!.brief}
-- **Palette:** ${palette.label} — ${palette.brief} Build a full token set from it
-  (surfaces, ink, one accent, tonal steps). Let the reference photos pull the
-  exact tones toward the real place, but stay in this family.
+- **Palette:** comes from the photo study below. **Fallback**, used only if the
+  photos show no clear identity: ${palette.label} — ${palette.brief} Either way,
+  build a full token set (surfaces, ink, one accent, tonal steps).
 - **Type:** ${type.label} — ${type.brief}
   - display: \`font-family: ${type.display}\`
-  - body: \`font-family: ${type.body}\`
+  - body: \`font-family: ${type.body}\`${alternates
+    .map(
+      (alt) => `
+  - *or, only if the photos' signage or character clearly calls for it:* ${alt.label} — ${alt.brief}
+    display \`${alt.display}\` · body \`${alt.body}\``,
+    )
+    .join("")}
 - **Signature motion:** ${byKey(MOTIONS, direction.motion)!.brief}
 - **Ornament:** ${byKey(ORNAMENTS, direction.ornament)!.brief}
 
 Stamp the top of the stylesheet with
-\`/* Hallmark · macrostructure: ${layout.label} · hero: ${direction.hero} · footer: ${direction.footer} · palette: ${palette.label} · type: ${type.label} */\`.`;
+\`/* Hallmark · macrostructure: ${layout.label} · hero: ${direction.hero} · footer: ${direction.footer} · palette: <from photos, or ${palette.label}> · type: <the pairing you used> */\`.`;
 }
