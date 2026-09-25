@@ -287,6 +287,12 @@ export const siteBuilds = pgTable(
     photoCount: integer("photo_count").notNull().default(0),
     /** What this build actually spent at Google — 0 when the cache was hit. */
     costUsd: doublePrecision("cost_usd").notNull().default(0),
+    /**
+     * JSON art direction the page was built to (layout, palette, type…), see
+     * src/admin/lib/generate/direction.ts. Recent ones are what the next build
+     * steers away from. Null for builds from before directions existed.
+     */
+    direction: text("direction"),
     /** Tail of the agent's own output, kept for when a page comes out wrong. */
     agentLog: text("agent_log"),
     error: text("error"),

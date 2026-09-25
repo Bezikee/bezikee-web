@@ -13,6 +13,7 @@ import {
   siteBuilds,
   type Business,
 } from "@admin/lib/db/schema";
+import { getCategory } from "@admin/config/categories";
 import { publishDemo } from "@admin/lib/demo/store";
 import { demoUrl } from "@admin/lib/demo/url";
 import { logger } from "@admin/lib/log";
@@ -27,6 +28,7 @@ import {
   PHOTOS_PER_SITE,
 } from "@admin/lib/places/pricing";
 import { DATA_FILE, DESIGN_SKILL, runSiteAgent } from "./agent";
+import { chooseDirection, parseDirection, type Direction } from "./direction";
 import { prepareSandbox } from "./sandbox";
 import { INDEX_FILE, siteSlug, workDir } from "./paths";
 
@@ -77,6 +79,36 @@ async function cachedDetails(businessId: number): Promise<PlaceDetails | null> {
   }
 }
 
+/** How many recent builds, across all businesses, a new direction steers away from. */
+const RECENT_DIRECTIONS = 8;
+
+/**
+ * Pick this build's art direction: suited to the trade, unlike the last few
+ * pages built for anyone, and unlike this business's own previous page.
+ */
+async function directionFor(business: Business): Promise<Direction> {
+  const rows = await db
+    .select({ businessId: siteBuilds.businessId, direction: siteBuilds.direction })
+    .from(siteBuilds)
+    .where(isNotNull(siteBuilds.direction))
+    .orderBy(desc(siteBuilds.createdAt))
+    .limit(RECENT_DIRECTIONS);
+
+  const recent = rows
+    .map((row) => parseDirection(row.direction))
+    .filter((d): d is Direction => d !== null);
+
+  const [own] = await db
+    .select({ direction: siteBuilds.direction })
+    .from(siteBuilds)
+    .where(and(eq(siteBuilds.businessId, business.id), isNotNull(siteBuilds.direction)))
+    .orderBy(desc(siteBuilds.createdAt))
+    .limit(1);
+
+  const group = getCategory(business.primaryCategory ?? "")?.group;
+  return chooseDirection(group, recent, parseDirection(own?.direction));
+}
+
 export type StartResult =
   | { ok: true; buildId: number; slug: string }
   | { ok: false; error: string; status: number };
@@ -112,15 +144,23 @@ export async function startSiteBuild(
     return { ok: false, error: "Could not derive a safe directory name.", status: 500 };
   }
 
+  const direction = await directionFor(business);
+
   const [build] = await db
     .insert(siteBuilds)
-    .values({ businessId, leadId: lead?.id ?? null, slug, status: "pending" })
+    .values({
+      businessId,
+      leadId: lead?.id ?? null,
+      slug,
+      status: "pending",
+      direction: JSON.stringify(direction),
+    })
     .returning({ id: siteBuilds.id });
 
   running.add(businessId);
 
   // Deliberately not awaited: the caller gets an id to poll immediately.
-  void execute(build.id, business, dir, slug, options.refresh ?? false)
+  void execute(build.id, business, dir, slug, options.refresh ?? false, direction)
     .catch(async (error) => {
       log.error("build.unhandled", { buildId: build.id, businessId }, error);
       await finish(build.id, {
@@ -201,6 +241,7 @@ async function execute(
   work: string,
   slug: string,
   refresh: boolean,
+  direction: Direction,
 ): Promise<void> {
   const buildLog = log.child({ buildId, business: business.name, slug });
 
@@ -281,7 +322,7 @@ async function execute(
   // may only assert what is somewhere in here.
   const sourceText = JSON.stringify(payload);
 
-  const result = await runSiteAgent(work, dataFile, photoPaths, sourceText);
+  const result = await runSiteAgent(work, dataFile, photoPaths, sourceText, direction);
 
   if (!result.ok) {
     buildLog.error("build.failed", { error: result.error });

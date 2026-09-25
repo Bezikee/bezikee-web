@@ -19,6 +19,8 @@ type State = {
   build: Build | null;
   /** https://demo.bezikee.com/<uuid>, once a page has been published. */
   demoUrl: string | null;
+  /** The art direction of the latest build, e.g. "Letter · Olive & linen · Optima + Seravek". */
+  look: string | null;
   live: boolean;
   available: boolean;
   estimatedCostUsd: number;
@@ -166,6 +168,9 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
             />
             <span>{STAGE_LABEL[build?.status ?? "pending"]}</span>
           </div>
+          {state.look ? (
+            <p className="text-xs text-ink-secondary">Look: {state.look}</p>
+          ) : null}
           <p className="text-xs text-ink-muted">
             This usually takes a minute or two. You can leave the page.
           </p>
@@ -176,6 +181,7 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
 
           {done && build ? (
             <p className="text-xs text-ink-muted">
+              {state.look ? <span className="block text-ink-secondary">{state.look}</span> : null}
               {build.photoCount} photo{build.photoCount === 1 ? "" : "s"}
               {build.costUsd > 0
                 ? ` · cost $${build.costUsd.toFixed(3)}`
@@ -191,11 +197,13 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
 
           <button
             type="button"
-            onClick={() => start(done)}
+            // Never forces a fresh Place Details fetch: that is a paid call, and a
+            // new look needs new design choices, not new data from Google.
+            onClick={() => start(false)}
             disabled={busy}
             className="w-full rounded-md border border-line px-3 py-2 text-sm font-medium transition-colors hover:border-line-strong disabled:opacity-50"
           >
-            {done ? "Rebuild" : build?.status === "failed" ? "Try again" : "Generate site"}
+            {done ? "Rebuild with a new look" : build?.status === "failed" ? "Try again" : "Generate site"}
           </button>
 
           {!done ? (
