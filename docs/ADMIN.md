@@ -47,6 +47,36 @@ running `npm run dev`. The Generate button is hidden on bezikee.com. Point your 
 `DATABASE_URL` at the production database and anything you generate goes live at once;
 everyone else sees the link in the panel.
 
+### How a demo site is generated
+
+1. **Art direction.** Code chooses the layout, hero, footer, palette, font pairing,
+   motion and ornament (`src/admin/lib/generate/direction.ts`). Choices suit the trade,
+   avoid what recent builds used, and a rebuild always gets a new look.
+2. **Design.** The agent (`claude -p`) designs the page with the Hallmark skill
+   (`src/admin/skills/hallmark`) and the art direction.
+3. **Review, up to twice.** Our own code opens the page in headless Chrome, served with
+   the same headers as demo.bezikee.com, and takes phone and laptop screenshots of the
+   first screen and the whole page. It also measures sideways scroll and whether the
+   call button is on the first screen. The same agent session resumes, looks at the
+   screenshots and fixes the page. Invented years and image references also go back for
+   fixing rather than failing the build straight away.
+4. **Publish.** The page must pass the hard checks, then it goes live on
+   demo.bezikee.com.
+
+Needs Google Chrome (or Chromium, Edge or Brave) installed; set `CHROME_PATH` for another
+location. Without one, builds still work, just without the visual review. A build takes
+about 5–15 minutes. `SITE_AGENT_REVIEWS` changes the maximum number of review rounds (default 3; it stops early once the agent approves an unchanged page).
+
+**The agent is sandboxed** (`src/admin/lib/generate/sandbox.ts`):
+- It can write only in its own build folder.
+- Its shell runs inside macOS's sandbox: no network, no reading your home folder or
+  the project.
+- It starts with none of the app's secrets in its environment, and loads no MCP
+  servers or claude.ai connectors.
+- Anything not pre-approved is refused.
+
+Chrome runs in our process, not the agent's, so the sandbox doesn't need loosening for it.
+
 ---
 
 ## One-time setup

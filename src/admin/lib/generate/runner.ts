@@ -322,7 +322,17 @@ async function execute(
   // may only assert what is somewhere in here.
   const sourceText = JSON.stringify(payload);
 
-  const result = await runSiteAgent(work, dataFile, photoPaths, sourceText, direction);
+  const result = await runSiteAgent(
+    work,
+    dataFile,
+    photoPaths,
+    sourceText,
+    direction,
+    // So the lead page can say whether Claude is designing or checking.
+    async (stage) => {
+      await db.update(siteBuilds).set({ status: stage }).where(eq(siteBuilds.id, buildId));
+    },
+  );
 
   if (!result.ok) {
     buildLog.error("build.failed", { error: result.error });

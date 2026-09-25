@@ -176,7 +176,7 @@ export const PALETTES: Palette[] = [
   { key: "nightblue", label: "Night blue & amber", band: "dark", brief: "Midnight-blue ground, amber lamplight accent, warm off-white text.", affinity: { food: 1.2, services: 1.1 } },
   { key: "saffron", label: "Saffron & charcoal", band: "mid", brief: "Saffron and mustard fields against charcoal type, a hot tomato accent.", affinity: { food: 1.3, trades: 1.2 } },
   { key: "olive", label: "Olive & linen", band: "light", brief: "Linen paper, olive and sage tones, a dark olive-black ink.", affinity: { food: 1.2, health: 1.2, retail: 1.2 } },
-  { key: "plum", label: "Plum & blush", band: "mid", brief: "Blush and powder tones with deep plum type and a single plum accent.", affinity: { beauty: 1.5, food: 0.8, trades: 0.5 } },
+  { key: "plum", label: "Plum & blush", band: "mid", brief: "Blush and powder tones with deep plum type and a single plum accent.", affinity: { beauty: 1.5, food: 0.8, trades: 0.3 } },
   { key: "signal", label: "Paper & signal red", band: "light", brief: "Newsprint white and true black, one signal-red accent used sparingly.", affinity: { trades: 1.4, services: 1.3 } },
   { key: "azulejo", label: "Azulejo blue", band: "light", brief: "Chalk white with azulejo cobalt and a pale sky tint, like Spanish tile.", affinity: { food: 1.2, health: 1.2, retail: 1.1 } },
   { key: "cocoa", label: "Cocoa & cream", band: "mid", brief: "Cream and caramel with cocoa-brown type and a rich chocolate ground for one section.", affinity: { food: 1.4, beauty: 1.1 } },
@@ -190,7 +190,7 @@ export const TYPE_PAIRINGS: TypePairing[] = [
     display: `Didot, "Bodoni 72", "Bodoni MT", "Playfair Display", serif`,
     body: `"Avenir Next", Avenir, "Segoe UI", sans-serif`,
     brief: "High-contrast Didone display with a clean geometric-humanist body — fashion-magazine poise.",
-    affinity: { beauty: 1.5, retail: 1.2, trades: 0.5 },
+    affinity: { beauty: 1.5, retail: 1.2, trades: 0.3 },
   },
   {
     key: "slab", label: "Clarendon + Charter", style: "slab",
@@ -319,14 +319,24 @@ function weighted<T>(items: { item: T; weight: number }[], random: () => number)
  * recent builds used. If avoidance would leave nothing, it relaxes rather than
  * fails — variety is a preference, a page is a requirement.
  */
+/**
+ * Below this an option is a poor fit for the business — graphite and safety
+ * yellow for a bar — and is left out rather than merely made unlikely. Rare
+ * mismatches still happen when every draw is rolled; for a page shown to an
+ * owner, one is too many.
+ */
+const POOR_FIT = 0.5;
+
 function choose<T extends { key: string }>(
   options: T[],
   avoid: Set<string>,
   weight: (option: T) => number,
   random: () => number,
 ): T {
-  const fresh = options.filter((option) => !avoid.has(option.key));
-  const pool = fresh.length > 0 ? fresh : options;
+  const suitable = options.filter((option) => weight(option) >= POOR_FIT);
+  const candidates = suitable.length > 0 ? suitable : options;
+  const fresh = candidates.filter((option) => !avoid.has(option.key));
+  const pool = fresh.length > 0 ? fresh : candidates;
   return weighted(
     pool.map((item) => ({ item, weight: Math.max(weight(item), 0.01) })),
     random,
