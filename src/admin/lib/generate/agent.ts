@@ -1,12 +1,14 @@
 import "server-only";
 
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 import { logger } from "@admin/lib/log";
-import { directionBrief, type Direction } from "./direction";
+import { describeDirection, directionBrief, type Direction } from "./direction";
 import { INDEX_FILE } from "./paths";
+import { capturePreview, type Preview } from "./preview";
 import { settingsPath } from "./sandbox";
 
 const log = logger("generate.agent");
@@ -273,11 +275,38 @@ export function agentEnv(env: NodeJS.ProcessEnv): Record<string, string> {
 }
 
 /**
- * Run the agent inside `sandbox`, which must already hold the data file, the
- * photos and a `.claude/skills/<name>` copy, with its settings file beside it
- * (see `prepareSandbox`). It writes
- * `index.html` there; the caller copies that out. Resolves whether or not the
- * agent succeeded — the caller decides what a failure means.
+ * Review passes after the first build. The loop stops as soon as the agent
+ * approves an unchanged page, so the third usually never runs — it exists so a
+ * fix made in the second isn't shipped unseen. In testing, reviews took
+ * 25–50 seconds each.
+ */
+export const MAX_REVIEWS = Number(process.env.SITE_AGENT_REVIEWS ?? 3);
+
+/** What the agent must end its reply with when it has looked and changes nothing. */
+export const APPROVAL = "LOOKS GOOD";
+
+export type BuildStage = "generating" | "reviewing";
+
+/**
+ * Build the page, then show the agent what it built and let it fix it.
+ *
+ * Runs inside `sandbox`, which must already hold the data file, the photos and
+ * a `.claude/skills/<name>` copy, with its settings file beside it (see
+ * `prepareSandbox`). The agent writes `index.html` there; the caller reads it
+ * out. Resolves whether or not the build succeeded — the caller decides what a
+ * failure means.
+ *
+ * 1. The agent designs and writes the page.
+ * 2. We check it (invented years, images) and screenshot it in Chrome at phone
+ *    and laptop sizes, measuring what a picture can hide (sideways scroll, a
+ *    call button below the fold) — see preview.ts.
+ * 3. The same session resumes — skill, art direction and its own reasoning all
+ *    still in context — with the screenshots and findings, and fixes the page.
+ *
+ * Steps 2–3 repeat up to MAX_REVIEWS times. The loop ends early when the agent
+ * has looked, found nothing to change and said so, and nothing measurable is
+ * wrong. A page that still breaks a hard rule after the last review fails the
+ * build; softer findings are logged and the page is kept.
  */
 export async function runSiteAgent(
   sandbox: string,
@@ -285,10 +314,12 @@ export async function runSiteAgent(
   photoPaths: string[],
   sourceText: string,
   direction: Direction,
+  onStage: (stage: BuildStage) => Promise<void> = async () => {},
 ): Promise<AgentResult> {
-  const prompt = buildPrompt(dataFile, SKILL_NAME, photoPaths, direction);
-
-  const args = agentArgs(prompt, settingsPath(sandbox));
+  const sessionId = randomUUID();
+  const transcript: string[] = [];
+  const page = path.join(sandbox, INDEX_FILE);
+  const readPage = () => fs.readFile(page, "utf8").catch(() => null);
 
   log.info("agent.start", {
     sandbox: path.basename(sandbox),
@@ -297,8 +328,205 @@ export async function runSiteAgent(
     direction,
   });
 
+  await onStage("generating");
+  let turn = await runClaude(
+    sandbox,
+    buildPrompt(dataFile, SKILL_NAME, photoPaths, direction),
+    { sessionId },
+  );
+  transcript.push(`--- build ---\n${turn.log}`);
+  const logOf = () => transcript.join("\n\n").slice(-LOG_TAIL_CHARS);
+  if (!turn.ok) return { ...turn, log: logOf() };
+
+  let previousHtml: string | null = null;
+
+  for (let review = 1; ; review++) {
+    // Exit code 0 is the agent's opinion; the file is the fact.
+    const html = await readPage();
+    if (html === null) {
+      return { ok: false, log: logOf(), error: `The agent did not write ${INDEX_FILE}.` };
+    }
+
+    const problems = pageProblems(html, sourceText);
+    const changed = html !== previousHtml;
+    const approved = review > 1 && !changed && turn.log.includes(APPROVAL);
+
+    // Done when the agent has looked and is happy with an unchanged page, or
+    // when the reviews are used up. Either way the hard rules have the last word.
+    if ((approved && problems.length === 0) || review > MAX_REVIEWS) {
+      if (problems.length > 0) {
+        return { ok: false, log: logOf(), error: problems[0] };
+      }
+      if (!approved) {
+        // Reviews ran out with the last edit unseen by anyone. Measure it
+        // anyway, so whatever is still wrong is on record with the build.
+        const final = await capturePreview(html, path.join(sandbox, "review", "final")).catch(() => null);
+        if (final?.findings.length) {
+          transcript.push(`--- final check (unfixed) ---\n${final.findings.join("\n")}`);
+          log.warn("agent.unfixed", { findings: final.findings });
+        }
+      }
+      log.info("agent.finished", {
+        sandbox: path.basename(sandbox),
+        reviews: review - 1,
+        approved,
+      });
+      return { ok: true, log: logOf() };
+    }
+
+    await onStage("reviewing");
+    const preview = await capturePreview(
+      html,
+      path.join(sandbox, "review", `round-${review}`),
+    ).catch((error) => {
+      // A broken preview shouldn't sink a page that may be fine; review blind.
+      log.error("preview.failed", { review }, error);
+      return null;
+    });
+
+    // Nothing to show and nothing wrong: there is no review to have.
+    if (!preview && problems.length === 0) {
+      log.info("agent.finished", { sandbox: path.basename(sandbox), reviews: review - 1, preview: false });
+      return { ok: true, log: logOf() };
+    }
+
+    log.info("review.start", {
+      review,
+      shots: preview?.shots.length ?? 0,
+      findings: preview?.findings ?? [],
+      problems,
+    });
+
+    previousHtml = html;
+    turn = await runClaude(
+      sandbox,
+      reviewPrompt({
+        review,
+        lastReview: review === MAX_REVIEWS,
+        preview,
+        problems,
+        direction,
+        sandbox,
+      }),
+      { resume: sessionId },
+    );
+    transcript.push(`--- review ${review} ---\n${turn.log}`);
+    if (!turn.ok) return { ...turn, log: logOf() };
+  }
+}
+
+/**
+ * Rules the published page must not break, phrased so the agent can fix them.
+ * Empty when the page is fine.
+ */
+export function pageProblems(html: string, sourceText: string): string[] {
+  const problems: string[] = [];
+
+  if (html.length < 200) problems.push(`${INDEX_FILE} was written but is empty.`);
+
+  const year = findUnsupportedYear(html, sourceText);
+  if (year) {
+    problems.push(
+      `The page states the year ${year}, which appears nowhere in Google's data for this business. Do not put invented facts in front of the owner.`,
+    );
+  }
+
+  const leak = findImageReference(html);
+  if (leak) {
+    // The prompt says not to, but a prompt is not an enforcement mechanism, and
+    // this is the rule that makes the output publishable.
+    problems.push(
+      `The page references an image (${leak}). Generated sites must draw everything inline so they can be published.`,
+    );
+  }
+
+  if (/<script\b/i.test(html)) {
+    // Blocked by the page's CSP anyway, so it can only ever be dead weight.
+    problems.push("The page contains a <script>. Demo pages run no JavaScript; animation is CSS only.");
+  }
+
+  return problems;
+}
+
+/** The message that resumes the session with what the page actually looks like. */
+export function reviewPrompt(input: {
+  review: number;
+  lastReview: boolean;
+  preview: Preview | null;
+  problems: string[];
+  direction: Direction;
+  sandbox: string;
+}): string {
+  const { preview, problems, direction } = input;
+  const relative = (file: string) => `./${path.relative(input.sandbox, file)}`;
+  const mustFix = [...problems, ...(preview?.findings ?? [])];
+
+  return `## Review ${input.review}: look at what you built
+
+${
+    preview
+      ? `I opened your ${INDEX_FILE} in Chrome exactly as the owner will see it on
+demo.bezikee.com — the same security headers, so no scripts and no network.
+READ EVERY ONE of these screenshots with the Read tool before changing anything:
+
+${preview.shots.map((shot) => `- ${relative(shot.file)} — ${shot.label}`).join("\n")}
+
+The first-screen shots were taken with motion on, after the entrance settled.
+The whole-page shots use reduced motion, so every section is in its final state
+— if a section is missing or blank there, your reduced-motion styles hide it.
+They were rendered with this machine's fonts; the stacks you chose are what a
+Mac shows.`
+      : `There is no browser available to screenshot the page this time, so review
+the source itself against the points below.`
+  }
+
+${
+    mustFix.length
+      ? `**Must fix — these were checked, not guessed:**
+${mustFix.map((item) => `- ${item}`).join("\n")}
+`
+      : "Nothing measurable is wrong. Now judge it with your eyes.\n"
+  }
+**Then judge it as the owner would, against your brief:**
+
+- Does it follow the art direction — ${describeDirection(direction)} — or has it
+  drifted toward a generic template? It should feel like its own page.
+- Does the first screen hold the name, the rating and the phone button on both
+  the phone and the laptop, with nothing cramped, clipped or overlapping?
+- Is every piece of text legible against what is behind it? Check the real
+  contrast of anything that looks faint.
+- Is the rhythm of the page composed — varied section spacing, tone shifting
+  down the page — or does it read as stacked boxes?
+- Is there one moment the owner would stop at and say "that's nice"?
+- Run the ${SKILL_NAME} skill's slop test against what you see.
+
+Fix what you find by editing ${INDEX_FILE}. Refine; don't start over unless the
+page is genuinely broken. The art direction and every earlier rule still apply.
+
+${
+    input.lastReview
+      ? "This is the final review, so leave the page in its best state."
+      : `If you change anything you'll get fresh screenshots. If you looked and there
+is truly nothing worth changing, change nothing and end your reply with the line
+${APPROVAL}.`
+  }`;
+}
+
+/** One `claude` invocation: a fresh session, or a resumed one. */
+async function runClaude(
+  sandbox: string,
+  prompt: string,
+  session: { sessionId: string } | { resume: string },
+): Promise<AgentResult> {
+  const args = [
+    ...agentArgs(prompt, settingsPath(sandbox)),
+    ...("sessionId" in session
+      ? ["--session-id", session.sessionId]
+      : ["--resume", session.resume]),
+  ];
+
   const started = Date.now();
-  const output = await new Promise<AgentResult>((resolve) => {
+  const result = await new Promise<AgentResult>((resolve) => {
     const child = spawn("claude", args, {
       cwd: sandbox,
       // stdin closed: headless, and an agent waiting on input would otherwise
@@ -361,51 +589,14 @@ export async function runSiteAgent(
     });
   });
 
-  log.info("agent.finished", {
+  log.info("agent.turn", {
     sandbox: path.basename(sandbox),
-    ok: output.ok,
+    resumed: "resume" in session,
+    ok: result.ok,
     ms: Date.now() - started,
   });
 
-  if (!output.ok) return output;
-
-  // Exit code 0 is the agent's opinion; the file is the fact. An agent that
-  // talks about writing the page without writing it would otherwise be recorded
-  // as a success and show a broken link.
-  const page = path.join(sandbox, INDEX_FILE);
-  let html: string;
-  try {
-    html = await fs.readFile(page, "utf8");
-  } catch {
-    return { ...output, ok: false, error: `The agent did not write ${INDEX_FILE}.` };
-  }
-
-  if (html.length < 200) {
-    return { ...output, ok: false, error: `${INDEX_FILE} was written but is empty.` };
-  }
-
-  const year = findUnsupportedYear(html, sourceText);
-  if (year) {
-    return {
-      ...output,
-      ok: false,
-      error: `The page states the year ${year}, which appears nowhere in Google's data for this business. Do not put invented facts in front of the owner.`,
-    };
-  }
-
-  const leak = findImageReference(html);
-  if (leak) {
-    // The prompt says not to, but a prompt is not an enforcement mechanism, and
-    // this is the rule that makes the output publishable. Failing loudly beats
-    // publishing somebody else's licensed photograph on a public page.
-    return {
-      ...output,
-      ok: false,
-      error: `The page references an image (${leak}). Generated sites must draw everything inline so they can be published.`,
-    };
-  }
-
-  return output;
+  return result;
 }
 
 /**

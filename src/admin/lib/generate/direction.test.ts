@@ -132,6 +132,17 @@ describe("chooseDirection", () => {
     expect(tally("beauty", "plum")).toBeGreaterThan(tally("trades", "plum") * 2);
   });
 
+  it("never gives a business a look that clearly doesn't suit it", () => {
+    const random = seeded(17);
+    for (let i = 0; i < 500; i++) {
+      const food = chooseDirection("food", [], null, random);
+      expect(food.palette, "graphite & safety for a restaurant").not.toBe("graphite");
+      const trades = chooseDirection("trades", [], null, random);
+      expect(trades.palette, "plum & blush for a plumber").not.toBe("plum");
+      expect(trades.type, "Didot for a plumber").not.toBe("fashion");
+    }
+  });
+
   it("still picks when history has used everything", () => {
     // Every palette recently used: rotation relaxes rather than failing.
     const recent = PALETTES.map((p) => ({ ...sequence(1, "food")[0], palette: p.key }));

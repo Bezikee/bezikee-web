@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { DEMO_PAGE_HEADERS } from '@admin/lib/demo/headers'
 import { findDemoHtml } from '@admin/lib/demo/store'
 
 /**
@@ -23,21 +24,5 @@ export async function GET(_request: Request, ctx: RouteContext<'/demo-site/[id]'
     })
   }
 
-  return new NextResponse(html, {
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-      // A rebuild keeps the URL, so a cached copy would show the old page. These
-      // are viewed a handful of times; freshness wins.
-      'cache-control': 'no-store',
-      // The page is model-written. It draws everything inline and needs no
-      // network, no script and no framing, so it gets none of them.
-      'content-security-policy':
-        "default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
-      'x-content-type-options': 'nosniff',
-      // Shared by link, never meant to be found: keep it out of search results,
-      // and keep the secret URL out of the Referer when someone taps the Maps link.
-      'x-robots-tag': 'noindex, nofollow',
-      'referrer-policy': 'no-referrer',
-    },
-  })
+  return new NextResponse(html, { headers: DEMO_PAGE_HEADERS })
 }

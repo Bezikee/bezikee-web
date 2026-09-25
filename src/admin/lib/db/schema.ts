@@ -257,6 +257,8 @@ export const SITE_BUILD_STATUSES = [
   "pending",
   "fetching",
   "generating",
+  // Screenshotted in Chrome and handed back to the agent to check and fix.
+  "reviewing",
   "completed",
   "failed",
 ] as const;
