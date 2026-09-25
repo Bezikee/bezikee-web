@@ -19,15 +19,17 @@ export default async function LeadPage(props: PageProps<"/admin/leads/[id]">) {
   const leadId = Number(id);
   if (!Number.isInteger(leadId)) notFound();
 
-  const lead = await getLead(leadId);
+  // Sent together rather than one after another; each is a network round trip.
+  const [lead, settings, events] = await Promise.all([
+    getLead(leadId),
+    getSettings(),
+    db
+      .select()
+      .from(leadEvents)
+      .where(eq(leadEvents.leadId, leadId))
+      .orderBy(asc(leadEvents.createdAt)),
+  ]);
   if (!lead) notFound();
-
-  const settings = await getSettings();
-  const events = await db
-    .select()
-    .from(leadEvents)
-    .where(eq(leadEvents.leadId, leadId))
-    .orderBy(asc(leadEvents.createdAt));
 
   const categoryLabel = getCategory(lead.category ?? "")?.label ?? lead.category ?? "";
   const mapsUrl = `https://www.google.com/maps/place/?q=place_id:${lead.placeId}`;

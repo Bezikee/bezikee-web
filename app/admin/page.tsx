@@ -19,8 +19,7 @@ import { hasApiKey } from "@admin/lib/places/client";
 export const dynamic = "force-dynamic";
 
 export default async function OverviewPage() {
-  const stats = await getOverview();
-  const usage = await getApiUsage();
+  const [stats, usage] = await Promise.all([getOverview(), getApiUsage()]);
   const keyPresent = hasApiKey();
 
   const conversion =
