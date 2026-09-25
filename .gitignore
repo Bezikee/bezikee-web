@@ -39,3 +39,6 @@ npm-debug.log*
 .next
 next-env.d.ts
 *.tsbuildinfo
+
+# Admin panel: local JSONL logs and test output (see src/admin/lib/log.ts)
+/data

@@ -6,25 +6,40 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "tsx scripts/db-migrate.mts && next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/db-migrate.mts",
+    "db:studio": "drizzle-kit studio",
+    "seed:demo": "tsx scripts/seed-demo.mts",
+    "demos:import": "tsx scripts/import-demo-sites.mts",
+    "logs": "tsx scripts/logs.mts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "drizzle-orm": "^0.45.3",
     "lucide-react": "^0.468.0",
     "next": "^16.3.5",
+    "postgres": "^3.4.9",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "resend": "^6.28.1"
+    "resend": "^6.28.1",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "26.6.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.20",
+    "drizzle-kit": "^0.31.11",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
-    "typescript": "~5.6.2"
+    "tsx": "^4.23.15",
+    "typescript": "~5.6.2",
+    "vitest": "^4.1.11"
   }
 }

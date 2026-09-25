@@ -12,6 +12,28 @@ export default {
         'dark-card': 'rgba(24, 24, 27, 0.9)',
         'dark-section': 'rgba(17, 17, 17, 0.85)',
         'dark-border': '#27272A',
+
+        // Admin panel tokens. Defined as CSS variables in app/admin/admin.css and only set
+        // under .admin-theme, so they mean nothing on the marketing pages. RGB channels rather
+        // than hex, so opacity modifiers like bg-good/10 work.
+        surface: 'rgb(var(--admin-surface) / <alpha-value>)',
+        card: 'rgb(var(--admin-card) / <alpha-value>)',
+        'card-muted': 'rgb(var(--admin-card-muted) / <alpha-value>)',
+        line: 'rgb(var(--admin-border) / <alpha-value>)',
+        'line-strong': 'rgb(var(--admin-border-strong) / <alpha-value>)',
+        ink: 'rgb(var(--admin-text) / <alpha-value>)',
+        'ink-secondary': 'rgb(var(--admin-text-secondary) / <alpha-value>)',
+        'ink-muted': 'rgb(var(--admin-text-muted) / <alpha-value>)',
+        accent: 'rgb(var(--admin-accent) / <alpha-value>)',
+        'accent-hover': 'rgb(var(--admin-accent-hover) / <alpha-value>)',
+        'accent-soft': 'rgb(var(--admin-accent-soft) / <alpha-value>)',
+        'accent-ink': 'rgb(var(--admin-accent-ink) / <alpha-value>)',
+        good: 'rgb(var(--admin-good) / <alpha-value>)',
+        warning: 'rgb(var(--admin-warning) / <alpha-value>)',
+        serious: 'rgb(var(--admin-serious) / <alpha-value>)',
+        critical: 'rgb(var(--admin-critical) / <alpha-value>)',
+        track: 'rgb(var(--admin-track) / <alpha-value>)',
+        grid: 'rgb(var(--admin-grid) / <alpha-value>)',
       },
       boxShadow: {
         'neon': '0 0 20px rgba(16, 185, 129, 0.3)',
