@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type BuildStatus = "pending" | "fetching" | "generating" | "reviewing" | "completed" | "failed";
+type BuildStatus = "pending" | "fetching" | "generating" | "reviewing" | "writing" | "completed" | "failed";
+
+const IN_PROGRESS: BuildStatus[] = ["pending", "fetching", "generating", "reviewing", "writing"];
+const inProgress = (status: BuildStatus | undefined) => status != null && IN_PROGRESS.includes(status);
 
 type Build = {
   id: number;
@@ -32,6 +35,7 @@ const STAGE_LABEL: Record<BuildStatus, string> = {
   fetching: "Fetching details and photos from Google…",
   generating: "Claude is designing the page…",
   reviewing: "Claude is checking the page in a browser and polishing it…",
+  writing: "The page is live. Claude is writing the email to the owner…",
   completed: "Done",
   failed: "Failed",
 };
@@ -67,10 +71,7 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
       if (cancelled) return;
 
       // Keep polling only while there is something to watch.
-      const active =
-        next?.live || next?.build?.status === "pending" ||
-        next?.build?.status === "fetching" || next?.build?.status === "generating" ||
-          next?.build?.status === "reviewing";
+      const active = next?.live || inProgress(next?.build?.status);
 
       if (active) {
         timer.current = setTimeout(tick, POLL_MS);
@@ -114,10 +115,7 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
 
       const tick = async () => {
         const next = await load();
-        const active =
-          next?.live || next?.build?.status === "pending" ||
-          next?.build?.status === "fetching" || next?.build?.status === "generating" ||
-          next?.build?.status === "reviewing";
+        const active = next?.live || inProgress(next?.build?.status);
         if (active) timer.current = setTimeout(tick, POLL_MS);
         else router.refresh();
       };
@@ -132,12 +130,7 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
   if (!state) return null;
 
   const build = state.build;
-  const running =
-    state.live ||
-    build?.status === "pending" ||
-    build?.status === "fetching" ||
-    build?.status === "generating" ||
-    build?.status === "reviewing";
+  const running = state.live || inProgress(build?.status);
   const done = build?.status === "completed" && !running;
 
   return (
@@ -146,7 +139,8 @@ export function SiteGenerator({ leadId }: { leadId: number }) {
         <div>
           <h2 className="text-sm font-semibold tracking-tight">Demo website</h2>
           <p className="mt-1 text-xs text-ink-muted">
-            Pulls everything Google has, then has Claude build a page.
+            Pulls everything Google has, then has Claude build a page and write the
+            email that pitches it.
           </p>
         </div>
       </div>

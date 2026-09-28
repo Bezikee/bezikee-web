@@ -10,6 +10,10 @@ const patchSchema = z.object({
   quoteAmount: z.number().nonnegative().nullable().optional(),
   demoUrl: z.string().max(500).nullable().optional(),
   notes: z.string().max(10_000).nullable().optional(),
+  /** The pitch email draft, saved without sending. */
+  contactEmail: z.union([z.email().max(200), z.literal("")]).nullable().optional(),
+  emailSubject: z.string().max(300).nullable().optional(),
+  emailBody: z.string().max(10_000).nullable().optional(),
   nextFollowUpAt: z.number().int().nullable().optional(),
   /** Set when an outreach message is actually sent, to stamp `contactedAt`. */
   markContacted: z.boolean().optional(),
@@ -43,6 +47,9 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/admin/lead
   if (patch.quoteAmount !== undefined) update.quoteAmount = patch.quoteAmount;
   if (patch.demoUrl !== undefined) update.demoUrl = patch.demoUrl || null;
   if (patch.notes !== undefined) update.notes = patch.notes;
+  if (patch.contactEmail !== undefined) update.contactEmail = patch.contactEmail || null;
+  if (patch.emailSubject !== undefined) update.emailSubject = patch.emailSubject || null;
+  if (patch.emailBody !== undefined) update.emailBody = patch.emailBody || null;
   if (patch.nextFollowUpAt !== undefined) {
     update.nextFollowUpAt = patch.nextFollowUpAt ? new Date(patch.nextFollowUpAt) : null;
   }

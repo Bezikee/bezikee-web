@@ -120,11 +120,6 @@ export default async function LeadsPage(props: PageProps<"/admin/leads">) {
             sort={filters.sort}
             dir={filters.dir}
             params={exportParams.toString()}
-            outreach={{
-              myName: settings.myName,
-              whatsappTemplate: settings.whatsappTemplate,
-              currency: settings.currency,
-            }}
           />
 
           <p className="mt-3 text-xs text-ink-muted">

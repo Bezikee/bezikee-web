@@ -27,7 +27,17 @@ import {
   COST_PER_PHOTO_USD,
   PHOTOS_PER_SITE,
 } from "@admin/lib/places/pricing";
-import { DATA_FILE, DESIGN_SKILL, STYLE_FILE, runSiteAgent, type ReferencePhoto } from "./agent";
+import { countryOf, languageFor } from "@admin/lib/leads/language";
+import {
+  DATA_FILE,
+  DESIGN_SKILL,
+  STYLE_FILE,
+  runEmailAgent,
+  runSiteAgent,
+  type Place,
+  type ReferencePhoto,
+} from "./agent";
+import type { PitchEmail } from "./email";
 import {
   chooseDirection,
   parseDirection,
@@ -199,6 +209,7 @@ async function finish(
 async function recordOnLead(
   businessId: number,
   demoLink: string,
+  email: (PitchEmail & { language: string }) | null,
   buildLog: ReturnType<typeof logger>,
 ): Promise<void> {
   const [lead] = await db
@@ -219,6 +230,11 @@ async function recordOnLead(
     .update(leads)
     .set({
       demoUrl: demoLink,
+      // A rebuild writes a new email for the new page, replacing the old draft.
+      // What was already sent is on record in the timeline.
+      ...(email
+        ? { emailSubject: email.subject, emailBody: email.body, emailLanguage: email.language }
+        : {}),
       ...(advance ? { status: "demo_built" as const } : {}),
       updatedAt: new Date(),
     })
@@ -227,9 +243,11 @@ async function recordOnLead(
   await db.insert(leadEvents).values({
     leadId: lead.id,
     type: advance ? "status" : "note",
-    message: advance
-      ? `Demo site generated. Status moved from ${lead.status} to demo_built.`
-      : `Demo site regenerated. Status left at ${lead.status}.`,
+    message:
+      (advance
+        ? `Demo site generated. Status moved from ${lead.status} to demo_built.`
+        : `Demo site regenerated. Status left at ${lead.status}.`) +
+      (email ? " Pitch email written." : " No pitch email this time; the default template applies."),
   });
 
   buildLog.info("lead.updated", {
@@ -307,6 +325,13 @@ async function execute(
     referencePhotos,
   };
 
+  // Where the business is decides the language of its page and its email.
+  const country = countryOf({ addressComponents: details.addressComponents, address: business.address });
+  const place: Place = {
+    language: languageFor(country),
+    country: (country && new Intl.DisplayNames(["en"], { type: "region" }).of(country)) ?? "Spain",
+  };
+
   const dataFile = path.join(work, DATA_FILE);
   await fs.writeFile(dataFile, JSON.stringify(payload, null, 2), "utf8");
 
@@ -336,6 +361,7 @@ async function execute(
     async (stage) => {
       await db.update(siteBuilds).set({ status: stage }).where(eq(siteBuilds.id, buildId));
     },
+    place,
   );
 
   if (!result.ok) {
@@ -369,9 +395,36 @@ async function execute(
   const demoId = await publishDemo(business.id, buildId, html);
   const link = demoUrl(demoId);
 
-  await finish(buildId, { status: "completed", agentLog: result.log, error: null });
+  // The page is live; now the session that made it writes the email that sells
+  // it. A failure here costs the tailored email, never the page.
+  await db.update(siteBuilds).set({ status: "writing" }).where(eq(siteBuilds.id, buildId));
+  let email: PitchEmail | null = null;
+  let emailLog = "";
+  if (result.sessionId) {
+    const written = await runEmailAgent(work, result.sessionId, {
+      language: place.language,
+      websiteClass: business.websiteClass,
+      hasQuote: true,
+    }).catch((error) => {
+      buildLog.error("email.failed", {}, error);
+      return { email: null, log: "" };
+    });
+    email = written.email;
+    emailLog = written.log;
+  }
 
-  await recordOnLead(business.id, link, buildLog);
+  await finish(buildId, {
+    status: "completed",
+    agentLog: `${result.log}\n\n${emailLog}`.trim().slice(-20_000),
+    error: null,
+  });
+
+  await recordOnLead(
+    business.id,
+    link,
+    email ? { ...email, language: place.language.code } : null,
+    buildLog,
+  );
 
   buildLog.info("build.completed", { demoId, link });
 }

@@ -1,10 +1,13 @@
 /**
- * Outreach message rendering. Templates are plain text with `{{placeholder}}`
- * slots, editable from the Settings page.
+ * The pitch email: templating, and turning it into what Resend sends.
  *
- * Defaults are in Spanish because the first target area is Madrid, and they lead
- * with the demo link rather than the price — the pitch is "look what I already
- * built for you", not a cold quote.
+ * Each lead normally gets its own email, written by the site agent alongside
+ * the demo (see generate/email.ts). The template below is the fallback for
+ * leads whose demo predates that, and is editable from Settings.
+ *
+ * Emails are plain text with `{{placeholder}}` slots. The demo link and the
+ * quote stay as slots until the moment of sending, so a rebuilt demo or a
+ * changed price never leaves a stale one in a saved draft.
  */
 
 export const TEMPLATE_VARIABLES = [
@@ -13,8 +16,6 @@ export const TEMPLATE_VARIABLES = [
   "area",
   "demo_url",
   "quote",
-  "my_name",
-  "my_phone",
 ] as const;
 
 export type TemplateVariable = (typeof TEMPLATE_VARIABLES)[number];
@@ -24,20 +25,18 @@ export const DEFAULT_EMAIL_SUBJECT = "Una web para {{business_name}}";
 
 export const DEFAULT_EMAIL_TEMPLATE = `Hola,
 
-Soy {{my_name}}. He visto la ficha de {{business_name}} en Google Maps y me he dado cuenta de que no tenéis web propia, así que quien os busca solo encuentra la ficha.
+Os escribimos desde Bezikee. Buscando negocios de la zona en Google Maps dimos con {{business_name}} y vimos que no tenéis web propia, así que quien os busca solo encuentra la ficha.
 
-Le he montado una demo para que veáis cómo quedaría:
+Nos hemos tomado la libertad de prepararos una, para que veáis cómo quedaría:
 {{demo_url}}
 
-Si os encaja, la dejo publicada con vuestro dominio por {{quote}}. Incluye diseño, textos, vuestras fotos y que se vea bien en el móvil.
+Si os gusta, la dejamos publicada con vuestro propio dominio por {{quote}}. Cualquier cambio que queráis hacerle lo vemos juntos.
 
-¿Le echáis un vistazo y me decís qué os parece?
+¿Le echáis un vistazo y nos decís qué os parece?
 
 Un saludo,
-{{my_name}}
-{{my_phone}}`;
-
-export const DEFAULT_WHATSAPP_TEMPLATE = `Hola! Soy {{my_name}}. He visto que {{business_name}} no tiene web propia, solo la ficha de Google. Os he preparado una demo para que la veáis: {{demo_url}} — si os encaja, la dejo publicada por {{quote}}. ¿La miráis y me decís?`;
+Bezikee
+bezikee.com`;
 
 /** Replace `{{var}}` slots. Unknown or unset variables are left visible so you can spot gaps before sending. */
 export function renderTemplate(template: string, vars: TemplateVars): string {
@@ -58,7 +57,7 @@ export function missingVariables(template: string, vars: TemplateVars): string[]
 }
 
 /**
- * Digits only, in the form wa.me expects. Spanish nine-digit numbers get the 34
+ * Digits only, with a country code. Spanish nine-digit numbers get the 34
  * country code added; anything already carrying a country code is left alone.
  */
 export function normalizePhone(
@@ -79,25 +78,25 @@ export function normalizePhone(
   return digits;
 }
 
-export function whatsappLink(
-  phone: string | null | undefined,
-  message: string,
-): string | null {
-  const number = normalizePhone(phone);
-  if (!number) return null;
-  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-}
+/** Number formatting per pitch language, so "450 €" reads right in Spanish and "€450" in English. */
+const QUOTE_LOCALE: Record<string, string> = {
+  es: "es-ES",
+  en: "en-GB",
+  fr: "fr-FR",
+  it: "it-IT",
+  pt: "pt-PT",
+  de: "de-DE",
+  nl: "nl-NL",
+};
 
-export function mailtoLink(subject: string, body: string, to = ""): string {
-  const params = new URLSearchParams({ subject, body });
-  // URLSearchParams encodes spaces as "+", which mail clients render literally.
-  return `mailto:${to}?${params.toString().replace(/\+/g, "%20")}`;
-}
-
-export function formatQuote(amount: number | null | undefined, currency = "EUR"): string {
+export function formatQuote(
+  amount: number | null | undefined,
+  currency = "EUR",
+  language = "es",
+): string {
   if (amount == null) return "";
   try {
-    return new Intl.NumberFormat("es-ES", {
+    return new Intl.NumberFormat(QUOTE_LOCALE[language] ?? "es-ES", {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
@@ -105,4 +104,32 @@ export function formatQuote(amount: number | null | undefined, currency = "EUR")
   } catch {
     return `${amount} ${currency}`;
   }
+}
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+/**
+ * The HTML part of the email: the plain text, paragraph for paragraph, with
+ * links made clickable. Deliberately unstyled. A designed newsletter template
+ * is exactly what makes a one-to-one email read as marketing; this should look
+ * like something typed into Gmail.
+ */
+export function emailHtml(text: string): string {
+  const paragraphs = text
+    .trim()
+    .split(/\n{2,}/)
+    .map((block) => {
+      const html = escapeHtml(block)
+        .replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (url) => `<a href="${url}">${url}</a>`)
+        .replace(/\n/g, "<br>");
+      return `<p style="margin:0 0 1em">${html}</p>`;
+    })
+    .join("\n");
+
+  return `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#222">\n${paragraphs}\n</div>`;
 }
