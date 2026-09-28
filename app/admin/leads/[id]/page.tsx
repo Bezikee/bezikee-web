@@ -7,7 +7,7 @@ import { SiteGenerator } from "@admin/components/site-generator";
 import { Badge } from "@admin/components/ui";
 import { getCategory } from "@admin/config/categories";
 import { db } from "@admin/lib/db";
-import { leadEvents } from "@admin/lib/db/schema";
+import { leadEvents, leads } from "@admin/lib/db/schema";
 import { WEBSITE_CLASS_HINTS, WEBSITE_CLASS_LABELS } from "@admin/lib/leads/classify";
 import { getLead } from "@admin/lib/leads/query";
 import { getSettings } from "@admin/lib/settings";
@@ -20,7 +20,7 @@ export default async function LeadPage(props: PageProps<"/admin/leads/[id]">) {
   if (!Number.isInteger(leadId)) notFound();
 
   // Sent together rather than one after another; each is a network round trip.
-  const [lead, settings, events] = await Promise.all([
+  const [lead, settings, events, [email]] = await Promise.all([
     getLead(leadId),
     getSettings(),
     db
@@ -28,6 +28,18 @@ export default async function LeadPage(props: PageProps<"/admin/leads/[id]">) {
       .from(leadEvents)
       .where(eq(leadEvents.leadId, leadId))
       .orderBy(asc(leadEvents.createdAt)),
+    // Only this page needs the email, so it isn't in the list query's columns.
+    db
+      .select({
+        to: leads.contactEmail,
+        subject: leads.emailSubject,
+        body: leads.emailBody,
+        language: leads.emailLanguage,
+        sentAt: leads.emailSentAt,
+      })
+      .from(leads)
+      .where(eq(leads.id, leadId))
+      .limit(1),
   ]);
   if (!lead) notFound();
 
@@ -59,22 +71,21 @@ export default async function LeadPage(props: PageProps<"/admin/leads/[id]">) {
           leadId={lead.leadId}
           status={lead.status}
           quoteAmount={lead.quoteAmount}
-          currency={lead.currency}
+          currency={lead.currency || settings.currency}
           demoUrl={lead.demoUrl}
           notes={lead.notes}
           businessName={lead.name}
           categoryLabel={categoryLabel}
           areaName={lead.areaName}
-          phone={lead.phone}
-          templates={{
-            myName: settings.myName,
-            myPhone: settings.myPhone,
-            defaultQuote: settings.defaultQuote,
-            currency: settings.currency,
-            emailSubject: settings.emailSubject,
-            emailTemplate: settings.emailTemplate,
-            whatsappTemplate: settings.whatsappTemplate,
+          defaultQuote={settings.defaultQuote}
+          email={{
+            to: email?.to ?? null,
+            subject: email?.subject ?? null,
+            body: email?.body ?? null,
+            language: email?.language ?? null,
+            sentAt: email?.sentAt?.toISOString() ?? null,
           }}
+          fallback={{ subject: settings.emailSubject, body: settings.emailTemplate }}
         />
 
         <div className="space-y-5">

@@ -5,13 +5,10 @@ import { hasApiKey } from "@admin/lib/places/client";
 import { getSettings, saveSettings } from "@admin/lib/settings";
 
 const settingsSchema = z.object({
-  myName: z.string().max(120).optional(),
-  myPhone: z.string().max(40).optional(),
   defaultQuote: z.string().max(20).optional(),
   currency: z.string().max(8).optional(),
   emailSubject: z.string().max(300).optional(),
   emailTemplate: z.string().max(10_000).optional(),
-  whatsappTemplate: z.string().max(4000).optional(),
   extraAggregatorDomains: z.string().max(10_000).optional(),
   coverageTtlDays: z.string().max(6).optional(),
 });

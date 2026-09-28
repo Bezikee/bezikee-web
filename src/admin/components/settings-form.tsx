@@ -6,13 +6,10 @@ import { useState } from "react";
 import { TEMPLATE_VARIABLES } from "@admin/lib/leads/outreach";
 
 type Settings = {
-  myName: string;
-  myPhone: string;
   defaultQuote: number;
   currency: string;
   emailSubject: string;
   emailTemplate: string;
-  whatsappTemplate: string;
   extraAggregatorDomains: string;
   coverageTtlDays: number;
 };
@@ -90,37 +87,16 @@ export function SettingsForm({
   return (
     <div className="space-y-5">
       <section className="rounded-xl border border-line bg-card p-5">
-        <h2 className="text-sm font-semibold tracking-tight">You</h2>
+        <h2 className="text-sm font-semibold tracking-tight">Pricing</h2>
         <p className="mt-1 text-xs text-ink-muted">
-          Dropped into your outreach messages.
+          What a website costs. It fills <code className="font-mono">{"{{quote}}"}</code> in every
+          pitch email, except for a lead given a price of its own on its page.
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs text-ink-muted" htmlFor="myName">
-              Your name
-            </label>
-            <input
-              id="myName"
-              value={values.myName}
-              onChange={(e) => set("myName", e.target.value)}
-              className={field}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-ink-muted" htmlFor="myPhone">
-              Your phone
-            </label>
-            <input
-              id="myPhone"
-              value={values.myPhone}
-              onChange={(e) => set("myPhone", e.target.value)}
-              className={field}
-            />
-          </div>
-          <div>
             <label className="block text-xs text-ink-muted" htmlFor="defaultQuote">
-              Default quote
+              Price per website
             </label>
             <input
               id="defaultQuote"
@@ -146,9 +122,10 @@ export function SettingsForm({
       </section>
 
       <section className="rounded-xl border border-line bg-card p-5">
-        <h2 className="text-sm font-semibold tracking-tight">Outreach templates</h2>
+        <h2 className="text-sm font-semibold tracking-tight">Fallback email</h2>
         <p className="mt-1 text-xs text-ink-muted">
-          Placeholders:{" "}
+          Every demo site now comes with an email written for that business. This one is only
+          used for leads whose demo was built before that. Placeholders:{" "}
           {TEMPLATE_VARIABLES.map((variable) => (
             <code key={variable} className="mr-1 font-mono">
               {`{{${variable}}}`}
@@ -177,18 +154,6 @@ export function SettingsForm({
               rows={12}
               value={values.emailTemplate}
               onChange={(e) => set("emailTemplate", e.target.value)}
-              className={`${field} resize-y font-mono text-xs leading-relaxed`}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-ink-muted" htmlFor="whatsappTemplate">
-              WhatsApp message
-            </label>
-            <textarea
-              id="whatsappTemplate"
-              rows={5}
-              value={values.whatsappTemplate}
-              onChange={(e) => set("whatsappTemplate", e.target.value)}
               className={`${field} resize-y font-mono text-xs leading-relaxed`}
             />
           </div>

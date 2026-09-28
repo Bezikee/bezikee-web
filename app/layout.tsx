@@ -19,9 +19,13 @@ export const metadata: Metadata = {
 
 // Shared by the public site and the admin panel, so it holds only what both need. The
 // site's header, footer and effects are in app/(site)/layout.tsx via SiteChrome.
+//
+// lang="en" is right for everything but the Spanish pages, whose layout (app/es/layout.tsx)
+// switches it to "es" before hydration; suppressHydrationWarning keeps React from
+// flagging that one attribute. It covers only this element's own attributes, not children.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   )

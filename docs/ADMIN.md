@@ -63,6 +63,34 @@ everyone else sees the link in the panel.
    fixing rather than failing the build straight away.
 4. **Publish.** The page must pass the hard checks, then it goes live on
    demo.bezikee.com.
+5. **The pitch email.** The same session resumes once more and writes the email
+   to the owner (`src/admin/lib/generate/email.ts`), signed as Bezikee, in the
+   language of the country the business is in (`src/admin/lib/leads/language.ts`).
+   It keeps `{{demo_url}}` and `{{quote}}` as slots, filled at send time. A
+   draft that breaks the rules (no link, invented URL, dashes, too long) goes
+   back once; if it still fails, the lead keeps the default template from
+   Settings. It never fails the build.
+
+Page and email both come out in the business's language: Spanish for Spain and
+Latin America, the local language for France, Italy, Portugal, Brazil, Germany,
+Austria and the Netherlands, English anywhere else.
+
+### Sending the pitch email
+
+On a lead's page, **Pitch email** holds the draft. Add the owner's address
+(Google doesn't publish it), edit anything, and **Send email**. It goes through
+Resend using `RESEND_API_KEY`:
+
+- **From** `Bezikee <hello@bezikee.com>`. It can't be sent *from*
+  wearebezikee@gmail.com: Resend only sends from domains you've verified, and
+  gmail.com can't be verified by anyone but Google.
+- **Reply-To** wearebezikee@gmail.com, so replies land in Gmail.
+- **BCC** the same inbox, so each pitch sits in Gmail beside its replies.
+
+Sending stamps the lead as contacted and records it in the timeline. The same
+email to the same address is only ever sent once, even on a double click. Change
+any of the addresses with `OUTREACH_FROM_EMAIL`, `OUTREACH_REPLY_TO` and
+`OUTREACH_BCC`.
 
 Needs Google Chrome (or Chromium, Edge or Brave) installed; set `CHROME_PATH` for another
 location. Without one, builds still work, just without the visual review. A build takes

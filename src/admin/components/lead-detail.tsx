@@ -4,13 +4,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { LEAD_STATUSES, type LeadStatus } from "@admin/lib/db/schema";
-import {
-  formatQuote,
-  mailtoLink,
-  missingVariables,
-  renderTemplate,
-  whatsappLink,
-} from "@admin/lib/leads/outreach";
+import { languageByCode } from "@admin/lib/leads/language";
+import { formatQuote, missingVariables, renderTemplate } from "@admin/lib/leads/outreach";
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   new: "New",
@@ -33,16 +28,17 @@ export type LeadDetailProps = {
   businessName: string;
   categoryLabel: string;
   areaName: string | null;
-  phone: string | null;
-  templates: {
-    myName: string;
-    myPhone: string;
-    defaultQuote: number;
-    currency: string;
-    emailSubject: string;
-    emailTemplate: string;
-    whatsappTemplate: string;
+  defaultQuote: number;
+  email: {
+    to: string | null;
+    /** Null when no email was written for this business; the fallback is used. */
+    subject: string | null;
+    body: string | null;
+    language: string | null;
+    sentAt: string | null;
   };
+  /** The default template from Settings, for leads without their own email. */
+  fallback: { subject: string; body: string };
 };
 
 function CopyButton({ text, label }: { text: string; label: string }) {
@@ -71,14 +67,29 @@ export function LeadDetail(props: LeadDetailProps) {
   const router = useRouter();
 
   const [status, setStatus] = useState<LeadStatus>(props.status);
+  // Blank means "the price from Settings". Only a number typed here is saved on
+  // the lead, so changing the price in Settings reaches every lead that hasn't
+  // been given one of its own.
   const [quote, setQuote] = useState<string>(
-    props.quoteAmount != null ? String(props.quoteAmount) : String(props.templates.defaultQuote),
+    props.quoteAmount != null ? String(props.quoteAmount) : "",
   );
+  const effectiveQuote = quote === "" ? props.defaultQuote : Number(quote);
+  const settingsPrice = formatQuote(props.defaultQuote, props.currency, props.email.language ?? "es");
   const [demoUrl, setDemoUrl] = useState(props.demoUrl ?? "");
   const [notes, setNotes] = useState(props.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const tailored = props.email.body != null;
+  const language = languageByCode(props.email.language);
+  const [to, setTo] = useState(props.email.to ?? "");
+  const [subject, setSubject] = useState(props.email.subject ?? props.fallback.subject);
+  const [body, setBody] = useState(props.email.body ?? props.fallback.body);
+  const [confirming, setConfirming] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sentAt, setSentAt] = useState(props.email.sentAt);
+  const [emailNote, setEmailNote] = useState<{ tone: "good" | "bad"; text: string } | null>(null);
 
   const vars = useMemo(
     () => ({
@@ -86,21 +97,23 @@ export function LeadDetail(props: LeadDetailProps) {
       category: props.categoryLabel,
       area: props.areaName ?? "",
       demo_url: demoUrl,
-      quote: formatQuote(Number(quote) || null, props.currency || props.templates.currency),
-      my_name: props.templates.myName,
-      my_phone: props.templates.myPhone,
+      quote: formatQuote(effectiveQuote, props.currency, props.email.language ?? "es"),
     }),
-    [props, demoUrl, quote],
+    [props.businessName, props.categoryLabel, props.areaName, props.currency, props.email.language, demoUrl, effectiveQuote],
   );
 
-  const emailSubject = renderTemplate(props.templates.emailSubject, vars);
-  const emailBody = renderTemplate(props.templates.emailTemplate, vars);
-  const whatsappBody = renderTemplate(props.templates.whatsappTemplate, vars);
-  const missing = missingVariables(props.templates.whatsappTemplate, vars).concat(
-    missingVariables(props.templates.emailTemplate, vars),
-  );
-  const uniqueMissing = [...new Set(missing)];
-  const waLink = whatsappLink(props.phone, whatsappBody);
+  const previewSubject = renderTemplate(subject, vars);
+  const previewBody = renderTemplate(body, vars);
+  const missing = [...new Set([...missingVariables(subject, vars), ...missingVariables(body, vars)])];
+  const validTo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim());
+  const dirty = demoUrl !== (props.demoUrl ?? "") || quote !== String(props.quoteAmount ?? "");
+  const blocker = !validTo
+    ? "Add the owner's email address."
+    : missing.length > 0
+      ? `Still empty: ${missing.map((m) => `{{${m}}}`).join(", ")}.`
+      : dirty
+        ? "Save the deal first, so the email uses the demo URL and quote shown."
+        : null;
 
   async function patch(body: Record<string, unknown>) {
     setSaving(true);
@@ -116,8 +129,10 @@ export function LeadDetail(props: LeadDetailProps) {
       setSaved(true);
       setTimeout(() => setSaved(false), 1800);
       router.refresh();
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+      return false;
     } finally {
       setSaving(false);
     }
@@ -132,17 +147,33 @@ export function LeadDetail(props: LeadDetailProps) {
     });
   }
 
-  function markSent(channel: "email" | "whatsapp") {
-    setStatus("contacted");
-    void patch({
-      status: status === "new" || status === "qualified" || status === "demo_built"
-        ? "contacted"
-        : status,
-      quoteAmount: quote === "" ? null : Number(quote),
-      demoUrl: demoUrl || null,
-      markContacted: true,
-      event: `Sent via ${channel === "email" ? "email" : "WhatsApp"}`,
-    });
+  async function saveDraft() {
+    setEmailNote(null);
+    const ok = await patch({ contactEmail: to.trim() || null, emailSubject: subject, emailBody: body });
+    if (ok) setEmailNote({ tone: "good", text: "Draft saved." });
+  }
+
+  async function send() {
+    setSending(true);
+    setEmailNote(null);
+    try {
+      const res = await fetch(`/api/admin/leads/${props.leadId}/email/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: to.trim(), subject, body }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Could not send");
+      setSentAt(data.sentAt);
+      if (status === "new" || status === "qualified" || status === "demo_built") setStatus("contacted");
+      setEmailNote({ tone: "good", text: `Sent to ${to.trim()}.` });
+      router.refresh();
+    } catch (err) {
+      setEmailNote({ tone: "bad", text: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setSending(false);
+      setConfirming(false);
+    }
   }
 
   return (
@@ -171,7 +202,7 @@ export function LeadDetail(props: LeadDetailProps) {
 
           <div>
             <label className="block text-xs text-ink-muted" htmlFor="quote">
-              Quote ({props.currency || props.templates.currency})
+              Price ({props.currency})
             </label>
             <input
               id="quote"
@@ -179,8 +210,14 @@ export function LeadDetail(props: LeadDetailProps) {
               min={0}
               value={quote}
               onChange={(e) => setQuote(e.target.value)}
+              placeholder={String(props.defaultQuote)}
               className="tnum mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm"
             />
+            <p className="mt-1 text-xs text-ink-muted">
+              {quote === ""
+                ? `The Settings price, ${settingsPrice}.`
+                : `Just this lead. Clear it to use ${settingsPrice}.`}
+            </p>
           </div>
 
           <div>
@@ -227,68 +264,141 @@ export function LeadDetail(props: LeadDetailProps) {
       </div>
 
       <div className="rounded-xl border border-line bg-card p-5">
-        <div className="mb-1 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold tracking-tight">Outreach</h2>
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-tight">Pitch email</h2>
+          <span className="rounded-full bg-card-muted px-2 py-0.5 text-xs text-ink-secondary">
+            {tailored
+              ? `Written for this business${language ? ` · ${language.name}` : ""}`
+              : "Default template"}
+          </span>
         </div>
         <p className="mb-4 text-xs text-ink-muted">
-          Built from your templates in Settings. Fill in the demo URL and quote above and
-          they update here.
+          {tailored
+            ? "Written by Claude alongside the demo site. Edit anything before sending."
+            : "No email has been written for this business yet. Generating its demo site writes one; until then this is the template from Settings."}{" "}
+          Sent as Bezikee, and replies go to wearebezikee@gmail.com.
         </p>
 
-        {uniqueMissing.length > 0 ? (
-          <p className="mb-4 rounded-lg bg-card-muted px-3 py-2 text-xs text-serious">
-            Still empty: {uniqueMissing.join(", ")}. Placeholders are left visible in the
-            message so you can spot them before sending.
+        {sentAt ? (
+          <p className="mb-4 rounded-lg bg-card-muted px-3 py-2 text-xs text-good">
+            Sent{" "}
+            {new Date(sentAt).toLocaleString("es-ES", {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+            {props.email.to ? ` to ${props.email.to}` : ""}.
           </p>
         ) : null}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-ink-secondary">WhatsApp</span>
-              <div className="flex gap-2">
-                <CopyButton text={whatsappBody} label="Copy" />
-                {waLink ? (
-                  <a
-                    href={waLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => markSent("whatsapp")}
-                    className="rounded-lg bg-accent px-2.5 py-1.5 text-xs font-medium text-accent-ink transition-colors hover:bg-accent-hover"
-                  >
-                    Open WhatsApp
-                  </a>
-                ) : (
-                  <span className="rounded-lg px-2.5 py-1.5 text-xs text-ink-muted">
-                    No phone number
-                  </span>
-                )}
-              </div>
-            </div>
-            <pre className="whitespace-pre-wrap rounded-lg bg-card-muted px-3 py-2.5 text-xs leading-relaxed text-ink-secondary">
-              {whatsappBody}
-            </pre>
+            <label className="block text-xs text-ink-muted" htmlFor="email-to">
+              To
+            </label>
+            <input
+              id="email-to"
+              type="email"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              placeholder="owner@example.com"
+              className="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm"
+            />
+            <p className="mt-1 text-xs text-ink-muted">
+              Google doesn&apos;t list owners&apos; emails. Look on their Instagram, Facebook or
+              booking page.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs text-ink-muted" htmlFor="email-subject">
+              Subject
+            </label>
+            <input
+              id="email-subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs text-ink-muted" htmlFor="email-body">
+              Body
+            </label>
+            <textarea
+              id="email-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={12}
+              className="mt-1 w-full resize-y rounded-lg border border-line bg-card px-3 py-2 font-mono text-xs leading-relaxed"
+            />
+            <p className="mt-1 text-xs text-ink-muted">
+              <code className="font-mono">{"{{demo_url}}"}</code> becomes the demo link and{" "}
+              <code className="font-mono">{"{{quote}}"}</code> the price above.
+            </p>
           </div>
 
           <div>
             <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-ink-secondary">Email</span>
-              <div className="flex gap-2">
-                <CopyButton text={`${emailSubject}\n\n${emailBody}`} label="Copy" />
-                <a
-                  href={mailtoLink(emailSubject, emailBody)}
-                  onClick={() => markSent("email")}
-                  className="rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-line-strong"
-                >
-                  Open mail app
-                </a>
-              </div>
+              <span className="text-xs font-medium text-ink-secondary">What they&apos;ll receive</span>
+              <CopyButton text={`${previewSubject}\n\n${previewBody}`} label="Copy" />
             </div>
-            <p className="mb-1 text-xs text-ink-muted">Subject: {emailSubject}</p>
+            <p className="mb-1 text-xs text-ink-muted">Subject: {previewSubject}</p>
             <pre className="whitespace-pre-wrap rounded-lg bg-card-muted px-3 py-2.5 text-xs leading-relaxed text-ink-secondary">
-              {emailBody}
+              {previewBody}
             </pre>
           </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {confirming ? (
+            <>
+              <button
+                type="button"
+                onClick={send}
+                disabled={sending}
+                className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:opacity-60"
+              >
+                {sending ? "Sending…" : `Send to ${to.trim()}`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                disabled={sending}
+                className="rounded-lg border border-line px-3.5 py-2 text-sm font-medium transition-colors hover:border-line-strong"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                disabled={blocker !== null}
+                title={blocker ?? undefined}
+                className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:opacity-60"
+              >
+                {sentAt ? "Send again" : "Send email"}
+              </button>
+              <button
+                type="button"
+                onClick={saveDraft}
+                disabled={saving}
+                className="rounded-lg border border-line px-3.5 py-2 text-sm font-medium transition-colors hover:border-line-strong disabled:opacity-60"
+              >
+                Save draft
+              </button>
+            </>
+          )}
+          {blocker && !confirming ? <span className="text-xs text-serious">{blocker}</span> : null}
+          {emailNote ? (
+            <span className={`text-xs ${emailNote.tone === "good" ? "text-good" : "text-critical"}`}>
+              {emailNote.text}
+            </span>
+          ) : null}
         </div>
       </div>
     </div>

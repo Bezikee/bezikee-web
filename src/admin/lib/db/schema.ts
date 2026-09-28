@@ -139,6 +139,25 @@ export const leads = pgTable(
     currency: text("currency").notNull().default("EUR"),
     demoUrl: text("demo_url"),
     notes: text("notes"),
+    /**
+     * Where the pitch email goes. Google doesn't publish owners' addresses, so
+     * this is typed in by hand from wherever the business lists one.
+     */
+    contactEmail: text("contact_email"),
+    /**
+     * The pitch email, written by the site agent for this business in the same
+     * session that built its demo, then editable on the lead page. Plain text
+     * with a `{{demo_url}}` slot (and optionally `{{quote}}`), filled in only
+     * when it is sent, so a rebuilt demo or a changed quote never goes stale.
+     * Null until a demo has been generated; the page falls back to the default
+     * template from Settings.
+     */
+    emailSubject: text("email_subject"),
+    emailBody: text("email_body"),
+    /** ISO 639-1 code of the language the email was written in, from where the business is. */
+    emailLanguage: text("email_language"),
+    /** When the email last went out through Resend. */
+    emailSentAt: timestamp("email_sent_at", { withTimezone: true }),
     contactedAt: timestamp("contacted_at", { withTimezone: true }),
     nextFollowUpAt: timestamp("next_follow_up_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -259,6 +278,8 @@ export const SITE_BUILD_STATUSES = [
   "generating",
   // Screenshotted in Chrome and handed back to the agent to check and fix.
   "reviewing",
+  // The page is published; the same session is writing the pitch email.
+  "writing",
   "completed",
   "failed",
 ] as const;

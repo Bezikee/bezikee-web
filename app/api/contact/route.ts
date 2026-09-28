@@ -52,6 +52,8 @@ export async function POST(request: Request) {
     ['Phone', clean(body.phone, 'phone')],
     ['Service', clean(body.service, 'service')],
     ['Budget', clean(body.budget, 'budget')],
+    // Which version of the site they wrote from, so the reply goes out in their language
+    ['Language', body.locale === 'es' ? 'Spanish' : body.locale === 'en' ? 'English' : ''],
   ].filter((entry): entry is [string, string] => Boolean(entry[1]))
 
   const rows = [['Name', name], ['Email', email], ...optional]

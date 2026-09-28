@@ -5,8 +5,11 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import type { WebsiteClass } from "@admin/lib/db/schema";
+import type { PitchLanguage } from "@admin/lib/leads/language";
 import { logger } from "@admin/lib/log";
 import { TYPE_PAIRINGS, describeDirection, directionBrief, type Direction } from "./direction";
+import { EMAIL_FILE, emailPrompt, parsePitchEmail, type PitchEmail } from "./email";
 import { INDEX_FILE } from "./paths";
 import { WORD_BUDGET, capturePreview, type Preview } from "./preview";
 import { settingsPath } from "./sandbox";
@@ -60,7 +63,15 @@ export type AgentResult = {
   ok: boolean;
   log: string;
   error?: string;
+  /** The Claude session the page was built in, so the email can be written in it too. */
+  sessionId?: string;
 };
+
+/** Where the business is and what it reads, for the page's copy and the email. */
+export type Place = { language: PitchLanguage; country: string };
+
+/** What every build assumed before businesses outside Spain were possible. */
+export const DEFAULT_PLACE: Place = { language: { code: "es", name: "Spanish" }, country: "Spain" };
 
 /** Is the `claude` CLI on PATH? Never on Vercel, so don't spawn a process to find out. */
 export async function isAgentAvailable(): Promise<boolean> {
@@ -90,10 +101,12 @@ export function buildPrompt(
   skillName: string,
   photos: ReferencePhoto[],
   direction: Direction,
+  place: Place = DEFAULT_PLACE,
 ): string {
-  return `You are designing and building a one-page website for a real small
-business in Spain. It will be shown to that business's owner to sell them a
-website. If it does not look worth paying for, it has failed.
+  return `You work for Bezikee, a small web studio, and you are designing and
+building a one-page website for a real small business in ${place.country}. It
+will be shown to that business's owner to sell them a website. If it does not
+look worth paying for, it has failed.
 
 Use the **${skillName}** skill for the design. Invoke it and follow it.
 
@@ -146,7 +159,8 @@ The build measures this. A pitch the owner has to read is a pitch they skim.
   build checks this and will fail. The same caution applies to any number: years,
   counts, distances, anything that looks like a fact.
 
-**How to write it:** in Spanish, the way the owner would talk. Lead with the
+**How to write it:** in ${place.language.name}, the way the owner would talk.
+The page is theirs, so it speaks as the business, never as Bezikee. Lead with the
 strongest true thing you have. Never talk the business down — price level in
 particular ("moderado", "barato", "económico") reads as cheap on someone's own
 website, so leave money out of it entirely. Invent nothing: no claim the data
@@ -411,6 +425,7 @@ export async function runSiteAgent(
   sourceText: string,
   direction: Direction,
   onStage: (stage: BuildStage) => Promise<void> = async () => {},
+  place: Place = DEFAULT_PLACE,
 ): Promise<AgentResult> {
   const sessionId = randomUUID();
   const transcript: string[] = [];
@@ -427,7 +442,7 @@ export async function runSiteAgent(
   await onStage("generating");
   let turn = await runClaude(
     sandbox,
-    buildPrompt(dataFile, SKILL_NAME, photos, direction),
+    buildPrompt(dataFile, SKILL_NAME, photos, direction, place),
     { sessionId },
   );
   transcript.push(`--- build ---\n${turn.log}`);
@@ -467,7 +482,7 @@ export async function runSiteAgent(
         reviews: review - 1,
         approved,
       });
-      return { ok: true, log: logOf() };
+      return { ok: true, log: logOf(), sessionId };
     }
 
     await onStage("reviewing");
@@ -483,7 +498,7 @@ export async function runSiteAgent(
     // Nothing to show and nothing wrong: there is no review to have.
     if (!preview && problems.length === 0) {
       log.info("agent.finished", { sandbox: path.basename(sandbox), reviews: review - 1, preview: false });
-      return { ok: true, log: logOf() };
+      return { ok: true, log: logOf(), sessionId };
     }
 
     log.info("review.start", {
@@ -509,6 +524,42 @@ export async function runSiteAgent(
     transcript.push(`--- review ${review} ---\n${turn.log}`);
     if (!turn.ok) return { ...turn, log: logOf() };
   }
+}
+
+/**
+ * Have the session that built the page write the pitch email for it.
+ *
+ * Resumes the build session, so everything it learnt about the business is
+ * still in context. One retry if the draft breaks a rule (see
+ * `parsePitchEmail`); after that, no email rather than a bad one. The lead page
+ * then falls back to the default template, which is no worse than before.
+ * Never fails the build: the page is the valuable part.
+ */
+export async function runEmailAgent(
+  sandbox: string,
+  sessionId: string,
+  input: { language: PitchLanguage; websiteClass: WebsiteClass; hasQuote: boolean },
+): Promise<{ email: PitchEmail | null; log: string }> {
+  const file = path.join(sandbox, EMAIL_FILE);
+  const transcript: string[] = [];
+  let prompt = emailPrompt(input);
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const turn = await runClaude(sandbox, prompt, { resume: sessionId });
+    transcript.push(`--- email ${attempt} ---\n${turn.log}`);
+    if (!turn.ok) break;
+
+    const parsed = parsePitchEmail(await fs.readFile(file, "utf8").catch(() => null), input);
+    if (parsed.ok) {
+      log.info("email.written", { sandbox: path.basename(sandbox), attempt, language: input.language.code });
+      return { email: parsed.email, log: transcript.join("\n\n") };
+    }
+
+    log.warn("email.rejected", { attempt, problem: parsed.problem });
+    prompt = `Your email needs fixing: ${parsed.problem} Every earlier rule for the email still applies. Rewrite ./${EMAIL_FILE}.`;
+  }
+
+  return { email: null, log: transcript.join("\n\n") };
 }
 
 /**

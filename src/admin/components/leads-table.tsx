@@ -7,7 +7,6 @@ import { useState, useTransition } from "react";
 import { getCategory } from "@admin/config/categories";
 import { LEAD_STATUSES, type LeadStatus } from "@admin/lib/db/schema";
 import { WEBSITE_CLASS_LABELS } from "@admin/lib/leads/classify";
-import { renderTemplate, whatsappLink } from "@admin/lib/leads/outreach";
 import type { LeadRow } from "@admin/lib/leads/query";
 import { nextSortDir, type LeadSort, type SortDir } from "@admin/lib/leads/sort";
 
@@ -48,17 +47,6 @@ function PhoneIcon() {
   );
 }
 
-function ChatIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={ICON}>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm3.75 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm3.75 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 20.755c1.006 0 1.947-.247 2.777-.682A9.06 9.06 0 0 0 12 20.25Z"
-      />
-    </svg>
-  );
-}
 
 /** Shown only on rows that already have a generated site. */
 function GlobeIcon() {
@@ -133,14 +121,12 @@ export function LeadsTable({
   sort,
   dir,
   params,
-  outreach,
 }: {
   rows: LeadRow[];
   sort: LeadSort;
   dir: SortDir;
   /** Current query string, so sorting preserves filters and vice versa. */
   params: string;
-  outreach: { myName: string; whatsappTemplate: string; currency: string };
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -236,17 +222,6 @@ export function LeadsTable({
             {rows.map((row) => {
               const categoryLabel =
                 getCategory(row.category ?? "")?.label ?? row.category ?? "—";
-              const wa = whatsappLink(
-                row.phone,
-                // The list can't fill in {{demo_url}} or {{quote}} — those are
-                // per-lead work done on the detail page. This is the opener.
-                renderTemplate(outreach.whatsappTemplate, {
-                  business_name: row.name,
-                  my_name: outreach.myName,
-                  category: categoryLabel,
-                  area: row.areaName ?? "",
-                }),
-              );
               const maps = row.placeId
                 ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                     row.name,
@@ -356,19 +331,6 @@ export function LeadsTable({
                           className={`${ACTION_CLASS} hover:text-accent`}
                         >
                           <PhoneIcon />
-                        </a>
-                      ) : null}
-
-                      {wa ? (
-                        <a
-                          href={wa}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="WhatsApp, with your template filled in"
-                          aria-label={`WhatsApp ${row.name}`}
-                          className={`${ACTION_CLASS} hover:text-good`}
-                        >
-                          <ChatIcon />
                         </a>
                       ) : null}
 

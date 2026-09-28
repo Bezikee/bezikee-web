@@ -8,18 +8,31 @@ import {
 } from '@admin/lib/auth'
 import { absoluteUrl } from '@admin/lib/http'
 import { demoHost, isDemoId } from '@admin/lib/demo/url'
+import {
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  detectLocale,
+  localePath,
+  splitLocale,
+  type Locale,
+} from './src/i18n/config'
+import { PAGE_PATHS } from './src/seo'
 
 /**
- * Two jobs, both about keeping things apart.
+ * Three jobs.
  *
  * 1. demo.bezikee.com serves generated demo sites and nothing else. `/<uuid>`
  *    is rewritten to the internal route that reads the page from the database;
  *    every other path on that host is a 404, so the marketing site and the
  *    admin panel can't be reached through it.
  *
- * 2. /admin and /api/admin sit behind the shared password. Everything else on
- *    bezikee.com passes straight through — and mostly never gets here, because
- *    the matcher below only sends admin and demo traffic to this function.
+ * 2. /admin and /api/admin sit behind the shared password.
+ *
+ * 3. A first visit to an English page picks the visitor's language: someone in a
+ *    Spanish-speaking country is sent to the /es/ copy, anyone else stays put.
+ *    Either way the choice goes in a cookie, and while that cookie is set the
+ *    matcher skips public pages entirely, so this runs once per visitor rather
+ *    than on every page view.
  *
  * Runs on the Node.js runtime (the Next 16 default for proxy), so
  * `ADMIN_PASSWORD` is read at request time rather than frozen into the build.
@@ -44,7 +57,53 @@ export async function proxy(request: NextRequest) {
     return gateAdmin(request, pathname)
   }
 
-  return NextResponse.next()
+  return routeLocale(request, pathname)
+}
+
+const PUBLIC_PAGES = new Set(Object.values(PAGE_PATHS))
+
+// Crawlers index each language at its own URL, linked by hreflang; redirecting them by
+// where their datacentre happens to be would hide one version or the other.
+const BOT = /bot|crawl|spider|slurp|facebookexternalhit|bingpreview|embedly|preview/i
+
+function routeLocale(request: NextRequest, pathname: string) {
+  const { locale, path } = splitLocale(pathname)
+  // Only English page loads are candidates. /es/ is never matched, so following a link to
+  // the Spanish site always lands there, wherever you are.
+  if (locale !== 'en' || !PUBLIC_PAGES.has(path)) return NextResponse.next()
+  // Client-side navigations and prefetches aren't page loads: redirecting those would swap
+  // the language under someone already reading the site. Next strips its own rsc markers
+  // before the proxy sees them, so go by the browser's fetch metadata: page loads are
+  // "document", fetch() calls "empty".
+  if (request.method !== 'GET') return NextResponse.next()
+  const dest = request.headers.get('sec-fetch-dest')
+  if (dest && dest !== 'document') return NextResponse.next()
+  if (BOT.test(request.headers.get('user-agent') ?? '')) return NextResponse.next()
+
+  const detected = detectLocale(
+    request.headers.get('x-vercel-ip-country'),
+    request.headers.get('accept-language'),
+  )
+
+  if (detected === 'en') return remember(NextResponse.next(), 'en')
+
+  const target = new URL(request.url)
+  const localized = localePath(detected, path)
+  target.pathname = localized.endsWith('/') ? localized : `${localized}/`
+  const response = NextResponse.redirect(target, 307)
+  // Depends on who is asking, so no shared cache may keep it
+  response.headers.set('cache-control', 'private, no-store')
+  response.headers.set('vary', 'x-vercel-ip-country, accept-language, cookie')
+  return remember(response, detected)
+}
+
+function remember(response: NextResponse, locale: Locale) {
+  response.cookies.set(LOCALE_COOKIE, locale, {
+    path: '/',
+    maxAge: LOCALE_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+  })
+  return response
 }
 
 function routeDemo(request: NextRequest, pathname: string) {
@@ -117,13 +176,21 @@ function notFound() {
 
 export const config = {
   matcher: [
-    // Only what needs a decision. The public pages never invoke this function,
-    // which keeps them as fast and cheap as they were before the admin existed.
+    // Only what needs a decision. The public pages invoke this function only until the
+    // visitor's language is settled, which keeps them as fast and cheap as they were
+    // before the admin existed.
     '/admin/:path*',
     '/api/admin/:path*',
     '/demo-site/:path*',
     // Any path on a demo.* host. The exact host is checked above against
     // DEMO_BASE_URL; this only has to be broad enough to catch it.
     { source: '/:path*', has: [{ type: 'host', value: 'demo\\..*' }] },
+    // Public pages without a remembered language (the cookie is LOCALE_COOKIE; the matcher
+    // must be a literal, so the name is repeated here). Excludes the Spanish site, APIs,
+    // Next's own files and anything with an extension; routeLocale narrows it to pages.
+    {
+      source: '/((?!es(?:/|$)|api/|_next/|admin|demo-site|.*\\.).*)',
+      missing: [{ type: 'cookie', key: 'bezikee-lang' }],
+    },
   ],
 }
