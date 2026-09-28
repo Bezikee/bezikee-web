@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-
-const standards = ['Performance', 'Security', 'Responsive', 'SEO-ready', 'Accessibility', 'Scalability', 'Clean code', 'Support']
+import type { Dictionary } from '../i18n'
 
 // Node ring radius as a fraction of the wheel size
 const ORBIT_RADIUS = 0.4
@@ -54,7 +53,8 @@ function seededRandom(index: number, salt: number) {
   return x - Math.floor(x)
 }
 
-export function StandardsOrbit() {
+// `labels` are the standards named around the wheel, one particle each
+export function StandardsOrbit({ labels: standards }: { labels: string[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const labelRefs = useRef<(HTMLSpanElement | null)[]>([])
@@ -296,7 +296,7 @@ export function StandardsOrbit() {
       container.removeEventListener('pointerleave', handlePointerLeave)
       container.removeEventListener('pointercancel', handlePointerLeave)
     }
-  }, [])
+  }, [standards.length])
 
   return (
     <div
@@ -372,28 +372,22 @@ export function StandardsOrbit() {
   )
 }
 
-export function StandardsSection() {
+export function StandardsSection({ t }: { t: Dictionary['standards'] }) {
   return (
     <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div className="order-2 lg:order-1">
-            <span className="text-xs font-semibold text-neon-green tracking-widest">OUR APPROACH</span>
+            <span className="text-xs font-semibold text-neon-green tracking-widest">{t.eyebrow}</span>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4 mb-4 md:mb-6">
-              Any Stack. Same Standards.
+              {t.title}
             </h2>
             <p className="text-sm md:text-base text-zinc-400 leading-relaxed mb-6 md:mb-8">
-              We're not tied to one framework or platform. We choose the technologies that fit your
-              project, your team and your budget, and hold every build to the same standards.
+              {t.text}
             </p>
 
             <div className="space-y-3 md:space-y-4">
-              {[
-                { label: 'Right fit', text: 'Tools chosen for your goals, not our habits' },
-                { label: 'Fast', text: 'Quick to load and smooth to use on any device' },
-                { label: 'Secure', text: 'Best practices built in from the first commit' },
-                { label: 'Maintainable', text: 'Clean, documented code any developer can pick up' },
-              ].map((item) => (
+              {t.points.map((item) => (
                 <div key={item.label} className="flex items-start md:items-center gap-3 md:gap-4">
                   <div className="w-2 h-2 bg-neon-green rounded-full mt-2 md:mt-0 flex-shrink-0"></div>
                   <span className="text-white font-medium w-24 md:w-28 flex-shrink-0 text-sm md:text-base">{item.label}</span>
@@ -404,7 +398,7 @@ export function StandardsSection() {
           </div>
 
           <div className="flex justify-center order-1 lg:order-2">
-            <StandardsOrbit />
+            <StandardsOrbit labels={t.orbit} />
           </div>
         </div>
       </div>

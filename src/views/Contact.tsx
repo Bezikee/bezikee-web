@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, Send, CheckCircle, Loader2 } from 'lucide-react'
+import type { Dictionary, Locale } from '../i18n'
 
-export function Contact() {
+// Takes its copy as a prop rather than importing the dictionaries: this is a client
+// component, and importing them would ship every language to every visitor.
+export function Contact({ locale, t }: { locale: Locale; t: Dictionary['contact'] }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,10 +25,10 @@ export function Contact() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    if (!formData.name.trim()) newErrors.name = 'Name is required'
-    if (!formData.email.trim()) newErrors.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format'
-    if (!formData.message.trim()) newErrors.message = 'Message is required'
+    if (!formData.name.trim()) newErrors.name = t.errors.nameRequired
+    if (!formData.email.trim()) newErrors.email = t.errors.emailRequired
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t.errors.emailInvalid
+    if (!formData.message.trim()) newErrors.message = t.errors.messageRequired
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -41,14 +44,14 @@ export function Contact() {
       const response = await fetch('/api/contact/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, website }),
+        body: JSON.stringify({ ...formData, website, locale }),
       })
       if (!response.ok) throw new Error(`Request failed: ${response.status}`)
       setIsSubmitted(true)
     } catch {
       // Only claim the message was sent when it actually was; otherwise offer the address
       // directly so the enquiry isn't lost to a failure the visitor can't see
-      setSubmitError("We couldn't send your message just now.")
+      setSubmitError(t.errors.sendFailed)
     } finally {
       setIsSubmitting(false)
     }
@@ -69,9 +72,9 @@ export function Contact() {
           <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 rounded-full bg-neon-green/20 flex items-center justify-center animate-pulse">
             <CheckCircle className="w-8 md:w-10 h-8 md:h-10 text-neon-green" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Message Sent!</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">{t.sentTitle}</h1>
           <p className="text-base md:text-lg text-zinc-400 mb-6 md:mb-8">
-            Thank you for reaching out! We've received your message and will get back to you within 24 hours.
+            {t.sentText}
           </p>
           <button
             onClick={() => {
@@ -80,7 +83,7 @@ export function Contact() {
             }}
             className="px-6 md:px-8 py-3 md:py-4 bg-neon-green text-white font-semibold rounded-lg shadow-neon-btn hover:shadow-neon-btn-hover hover:scale-105 transition-all duration-300"
           >
-            Send Another Message
+            {t.sendAnother}
           </button>
         </div>
       </div>
@@ -92,10 +95,10 @@ export function Contact() {
       {/* Hero Section */}
       <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow section-glow--hero">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">GET IN TOUCH</span>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Let's Build Something Amazing Together</h1>
+          <span className="text-xs font-semibold text-neon-green tracking-widest">{t.eyebrow}</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">{t.title}</h1>
           <p className="text-base md:text-lg text-zinc-400 leading-relaxed">
-            Have a project in mind? We'd love to hear about it. Fill out the form below and we'll get back to you within 24 hours.
+            {t.text}
           </p>
         </div>
       </section>
@@ -106,35 +109,18 @@ export function Contact() {
           {/* Contact Info */}
           <div className="space-y-6 md:space-y-8 lg:order-1 order-2">
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Contact Information</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t.infoTitle}</h2>
               <p className="text-sm md:text-base text-zinc-400 leading-relaxed">
-                Ready to start your project? Get in touch with us through any of these channels.
+                {t.infoText}
               </p>
             </div>
 
             <div className="space-y-4 md:space-y-6">
               <ContactInfo
                 icon={<Mail className="w-5 h-5" />}
-                label="Email"
+                label={t.email}
                 value="wearebezikee@gmail.com"
                 href="mailto:wearebezikee@gmail.com"
-              />
-              <ContactInfo
-                icon={<Phone className="w-5 h-5" />}
-                label="Phone"
-                value="+34 622 300 440"
-                href="tel:+34622300440"
-              />
-              <ContactInfo
-                icon={<Phone className="w-5 h-5" />}
-                label="Phone"
-                value="+34 657 735 246"
-                href="tel:+34657735246"
-              />
-              <ContactInfo
-                icon={<MapPin className="w-5 h-5" />}
-                label="Location"
-                value="Madrid, Spain"
               />
             </div>
           </div>
@@ -142,42 +128,42 @@ export function Contact() {
           {/* Contact Form */}
           <div className="lg:col-span-2 lg:order-2 order-1">
             <form onSubmit={handleSubmit} className="relative p-5 md:p-8 bg-dark-card rounded-xl md:rounded-2xl border border-dark-border shadow-neon">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">Send Us a Message</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">{t.formTitle}</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                 <FormInput
-                  label="Full Name"
+                  label={t.fields.name}
                   name="name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder={t.fields.namePlaceholder}
                   value={formData.name}
                   onChange={handleChange}
                   error={errors.name}
                   required
                 />
                 <FormInput
-                  label="Email Address"
+                  label={t.fields.email}
                   name="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder={t.fields.emailPlaceholder}
                   value={formData.email}
                   onChange={handleChange}
                   error={errors.email}
                   required
                 />
                 <FormInput
-                  label="Company Name"
+                  label={t.fields.company}
                   name="company"
                   type="text"
-                  placeholder="Your Company"
+                  placeholder={t.fields.companyPlaceholder}
                   value={formData.company}
                   onChange={handleChange}
                 />
                 <FormInput
-                  label="Phone Number"
+                  label={t.fields.phone}
                   name="phone"
                   type="tel"
-                  placeholder="+34 612 345 678"
+                  placeholder={t.fields.phonePlaceholder}
                   value={formData.phone}
                   onChange={handleChange}
                 />
@@ -185,49 +171,41 @@ export function Contact() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                 <FormSelect
-                  label="Service Interested In"
+                  label={t.fields.service}
                   name="service"
                   value={formData.service}
                   onChange={handleChange}
-                  // Values match their labels: the only consumer is the notification email,
-                  // and a code like "web" tells the reader less than "Web Development"
+                  // Values are the English names whatever the page language: the only consumer
+                  // is the notification email, and a code like "web" tells the reader less
+                  // than "Web Development"
                   options={[
-                    { value: '', label: 'Select a service' },
-                    { value: 'Web Development', label: 'Web Development' },
-                    { value: 'Mobile App Development', label: 'Mobile App Development' },
-                    { value: 'Custom Software', label: 'Custom Software' },
-                    { value: 'UI/UX Design', label: 'UI/UX Design' },
-                    { value: 'Consulting', label: 'Consulting' },
-                    { value: 'Other', label: 'Other' }
+                    { value: '', label: t.fields.servicePlaceholder },
+                    ...Object.entries(t.serviceOptions).map(([value, label]) => ({ value, label })),
                   ]}
                 />
                 <FormSelect
-                  label="Estimated Budget"
+                  label={t.fields.budget}
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
                   // Likewise the budget: the old values were the lower bound alone, so a
                   // €1,000-€5,000 enquiry arrived as "1000" and read as a flat €1,000
                   options={[
-                    { value: '', label: 'Select budget range' },
-                    { value: '€500 - €1,000', label: '€500 - €1,000' },
-                    { value: '€1,000 - €5,000', label: '€1,000 - €5,000' },
-                    { value: '€5,000 - €10,000', label: '€5,000 - €10,000' },
-                    { value: '€10,000 - €25,000', label: '€10,000 - €25,000' },
-                    { value: '€25,000+', label: '€25,000+' }
+                    { value: '', label: t.fields.budgetPlaceholder },
+                    ...Object.entries(t.budgetOptions).map(([value, label]) => ({ value, label })),
                   ]}
                 />
               </div>
 
               <div className="mb-6 md:mb-8">
                 <label className="block text-xs md:text-sm font-medium text-zinc-300 mb-1.5 md:mb-2">
-                  Project Details <span className="text-neon-green">*</span>
+                  {t.fields.message} <span className="text-neon-green">*</span>
                 </label>
                 <textarea
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
-                  placeholder="Tell us about your project, goals, and timeline..."
+                  placeholder={t.fields.messagePlaceholder}
                   rows={5}
                   className={`w-full px-3 md:px-4 py-2.5 md:py-3 bg-dark-bg border rounded-lg text-sm md:text-base text-white placeholder-zinc-600 focus:outline-none focus:border-neon-green focus:shadow-neon transition-all duration-300 resize-none ${
                     errors.message ? 'border-red-500' : 'border-dark-border'
@@ -239,7 +217,7 @@ export function Contact() {
               {/* Off-screen rather than display:none, which some bots skip. aria-hidden and
                   tabIndex keep it away from screen readers and keyboard users. */}
               <div aria-hidden="true" className="absolute left-[-9999px] w-px h-px overflow-hidden">
-                <label htmlFor="website">Leave this field empty</label>
+                <label htmlFor="website">{t.honeypot}</label>
                 <input
                   id="website"
                   name="website"
@@ -255,7 +233,7 @@ export function Contact() {
                 <div role="alert" className="mb-3 md:mb-4 p-3 md:p-4 rounded-lg border border-red-500/40 bg-red-500/10">
                   <p className="text-xs md:text-sm text-red-400">
                     {submitError}{' '}
-                    Please email us directly at{' '}
+                    {t.errors.emailUsDirectly}{' '}
                     <a href="mailto:wearebezikee@gmail.com" className="underline hover:text-red-300">
                       wearebezikee@gmail.com
                     </a>
@@ -272,49 +250,20 @@ export function Contact() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 md:w-5 h-4 md:h-5 animate-spin" />
-                    Sending...
+                    {t.sending}
                   </>
                 ) : (
                   <>
                     <Send className="w-4 md:w-5 h-4 md:h-5" />
-                    Send Message
+                    {t.send}
                   </>
                 )}
               </button>
 
               <p className="mt-3 md:mt-4 text-xs md:text-sm text-zinc-500 text-center">
-                By submitting this form, you agree to our Privacy Policy and Terms of Service.
+                {t.consent}
               </p>
             </form>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <span className="text-xs font-semibold text-neon-green tracking-widest">FAQ</span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Frequently Asked Questions</h2>
-          </div>
-
-          <div className="space-y-3 md:space-y-4">
-            <FAQItem
-              question="How long does a typical project take?"
-              answer="Project timelines vary based on complexity. A simple website takes 2-4 weeks, while custom applications can take 2-6 months. We'll provide a detailed timeline during our initial consultation."
-            />
-            <FAQItem
-              question="What is your payment structure?"
-              answer="We typically work with a 50% upfront deposit and 50% upon completion. For larger projects, we can arrange milestone-based payments. We accept bank transfers and major credit cards."
-            />
-            <FAQItem
-              question="Do you provide ongoing support?"
-              answer="Yes! All our packages include a support period. We also offer maintenance packages for long-term support, updates, and improvements to keep your digital products running smoothly."
-            />
-            <FAQItem
-              question="Can you work with our existing team?"
-              answer="Absolutely. We frequently collaborate with in-house teams and can adapt our workflow to integrate seamlessly with your existing processes and tools."
-            />
           </div>
         </div>
       </section>
@@ -412,29 +361,6 @@ function FormSelect({
           <option key={option.value} value={option.value}>{option.label}</option>
         ))}
       </select>
-    </div>
-  )
-}
-
-function FAQItem({ question, answer }: { question: string; answer: string }) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <div
-      className={`p-4 md:p-6 bg-dark-card rounded-xl md:rounded-2xl border transition-all duration-300 cursor-pointer ${
-        isOpen ? 'border-neon-green shadow-neon' : 'border-dark-border hover:border-neon-green/50'
-      }`}
-      onClick={() => setIsOpen(!isOpen)}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <h3 className="text-sm md:text-lg font-semibold text-white">{question}</h3>
-        <span className={`text-neon-green transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
-          ▼
-        </span>
-      </div>
-      {isOpen && (
-        <p className="mt-3 md:mt-4 text-sm md:text-base text-zinc-400 leading-relaxed">{answer}</p>
-      )}
     </div>
   )
 }

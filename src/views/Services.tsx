@@ -2,17 +2,23 @@ import Link from 'next/link'
 import { Globe, Smartphone, Layers, Palette, Server, Shield, Check } from 'lucide-react'
 import { CtaSection } from '../components/CtaSection'
 import { GradientText } from '../components/ScrollAnimations'
+import { getDictionary, localePath, type Locale } from '../i18n'
 
-export function Services() {
+export function Services({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale)
+  const sv = t.services
+  const to = (path: string) => localePath(locale, path)
+  const icons = [Globe, Smartphone, Layers, Palette, Server, Shield]
+
   return (
     <div className="pt-16 md:pt-20">
       {/* Hero Section */}
       <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow section-glow--hero">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">OUR SERVICES</span>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">Digital Solutions for Every Business Need</h1>
+          <span className="text-xs font-semibold text-neon-green tracking-widest">{sv.eyebrow}</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4 mb-4 md:mb-6">{sv.title}</h1>
           <p className="text-base md:text-lg text-zinc-400 leading-relaxed">
-            From concept to launch, we provide end-to-end development services that help businesses thrive in the digital age.
+            {sv.text}
           </p>
         </div>
       </section>
@@ -20,84 +26,18 @@ export function Services() {
       {/* Services Grid */}
       <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 max-w-6xl mx-auto">
-          <ServiceDetail
-            icon={<Globe className="w-7 md:w-8 h-7 md:h-8" />}
-            title="Web Development"
-            description="We build fast, responsive, and SEO-optimized websites that convert visitors into customers."
-            features={[
-              "Custom website design & development",
-              "E-commerce platforms",
-              "Progressive Web Apps (PWA)",
-              "Content Management Systems",
-              "Landing pages & marketing sites",
-              "Website optimization & performance"
-            ]}
-          />
-          <ServiceDetail
-            icon={<Smartphone className="w-7 md:w-8 h-7 md:h-8" />}
-            title="Mobile App Development"
-            description="Native and cross-platform mobile applications that provide exceptional user experiences."
-            features={[
-              "iOS app development",
-              "Android app development",
-              "Cross-platform solutions (React Native)",
-              "App Store optimization",
-              "Push notifications & analytics",
-              "Ongoing maintenance & updates"
-            ]}
-          />
-          <ServiceDetail
-            icon={<Layers className="w-7 md:w-8 h-7 md:h-8" />}
-            title="Custom Software"
-            description="Bespoke software solutions designed to streamline your operations and solve complex challenges."
-            features={[
-              "Enterprise applications",
-              "Business process automation",
-              "API development & integration",
-              "Database design & management",
-              "Cloud solutions & migration",
-              "Legacy system modernization"
-            ]}
-          />
-          <ServiceDetail
-            icon={<Palette className="w-7 md:w-8 h-7 md:h-8" />}
-            title="UI/UX Design"
-            description="Beautiful, intuitive designs that delight users and drive engagement."
-            features={[
-              "User research & personas",
-              "Wireframing & prototyping",
-              "Visual design & branding",
-              "Interaction design",
-              "Usability testing",
-              "Design systems"
-            ]}
-          />
-          <ServiceDetail
-            icon={<Server className="w-7 md:w-8 h-7 md:h-8" />}
-            title="Backend Development"
-            description="Robust, scalable backend systems that power your applications reliably."
-            features={[
-              "RESTful API development",
-              "GraphQL implementations",
-              "Microservices architecture",
-              "Real-time applications",
-              "Third-party integrations",
-              "Performance optimization"
-            ]}
-          />
-          <ServiceDetail
-            icon={<Shield className="w-7 md:w-8 h-7 md:h-8" />}
-            title="Consulting & Strategy"
-            description="Expert guidance to help you make informed technology decisions."
-            features={[
-              "Technical consulting",
-              "Digital transformation strategy",
-              "Technology stack assessment",
-              "Security audits",
-              "Code reviews",
-              "Team augmentation"
-            ]}
-          />
+          {sv.details.map((service, i) => {
+            const Icon = icons[i]
+            return (
+              <ServiceDetail
+                key={service.title}
+                icon={<Icon className="w-7 md:w-8 h-7 md:h-8" />}
+                title={service.title}
+                description={service.description}
+                features={service.features}
+              />
+            )
+          })}
         </div>
       </section>
 
@@ -105,41 +45,19 @@ export function Services() {
       <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 section-glow">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 md:mb-16">
-            <span className="text-xs font-semibold text-neon-green tracking-widest">OUR PROCESS</span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">How We Work</h2>
+            <span className="text-xs font-semibold text-neon-green tracking-widest">{sv.processEyebrow}</span>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">{sv.processTitle}</h2>
           </div>
 
           <div className="space-y-0">
-            <ProcessStep
-              number="01"
-              title="Discovery"
-              description="We start by understanding your business, goals, and target audience. This phase includes stakeholder interviews, market research, and requirement gathering."
-            />
-            <ProcessStep
-              number="02"
-              title="Planning"
-              description="Based on our findings, we create a detailed project plan, technical specifications, and timeline. You'll know exactly what to expect and when."
-            />
-            <ProcessStep
-              number="03"
-              title="Design"
-              description="Our designers create wireframes and visual designs that align with your brand. We iterate based on your feedback until you're completely satisfied."
-            />
-            <ProcessStep
-              number="04"
-              title="Development"
-              description="Our engineers bring the designs to life using clean, maintainable code. We follow best practices and industry standards throughout."
-            />
-            <ProcessStep
-              number="05"
-              title="Testing"
-              description="Rigorous testing ensures your product works flawlessly across all devices and scenarios. We catch and fix issues before launch."
-            />
-            <ProcessStep
-              number="06"
-              title="Launch & Support"
-              description="We handle deployment and provide ongoing support to ensure your product continues to perform optimally post-launch."
-            />
+            {sv.process.map((step, i) => (
+              <ProcessStep
+                key={step.title}
+                number={String(i + 1).padStart(2, '0')}
+                title={step.title}
+                description={step.description}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -147,39 +65,33 @@ export function Services() {
       {/* Pricing Section */}
       <section className="py-12 md:py-20 px-4 sm:px-6 md:px-12 lg:px-20 bg-dark-bg">
         <div className="text-center mb-10 md:mb-16">
-          <span className="text-xs font-semibold text-neon-green tracking-widest">PRICING</span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">Transparent Pricing</h2>
-          <p className="text-base md:text-lg text-zinc-500 mt-4">Choose the package that fits your needs</p>
+          <span className="text-xs font-semibold text-neon-green tracking-widest">{sv.pricingEyebrow}</span>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-4">{sv.pricingTitle}</h2>
+          <p className="text-base md:text-lg text-zinc-500 mt-4">{sv.pricingText}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
-          <PricingCard
-            name="Starter"
-            price="€500"
-            description="Simple static website"
-            features={["Up to 5 pages", "Responsive design", "Contact form", "SEO optimization", "2 weeks delivery"]}
-          />
-          <PricingCard
-            name="Professional"
-            price="€1,000"
-            description="Custom website with CMS"
-            features={["Up to 15 pages", "Custom design", "CMS integration", "Blog functionality", "Analytics", "3 months support"]}
-            popular
-          />
-          <PricingCard
-            name="Enterprise"
-            price="Custom"
-            description="Complex applications"
-            features={["Unlimited features", "Mobile app development", "Custom backend", "Database architecture", "12 months support"]}
-          />
+          {sv.packages.map((pkg, i) => (
+            <PricingCard
+              key={pkg.name}
+              href={to('/contact')}
+              name={pkg.name}
+              price={pkg.price}
+              description={pkg.description}
+              features={pkg.features}
+              buttonText={t.common.getStarted}
+              // The middle package is the one to steer people to
+              popularLabel={i === 1 ? t.common.mostPopular : undefined}
+            />
+          ))}
         </div>
       </section>
 
       {/* CTA Section */}
       <CtaSection
-        title={<>Ready to Start Your <GradientText>Project</GradientText>?</>}
-        description="Let's discuss how we can help bring your vision to life."
-        primary={{ label: 'Get a Free Quote', to: '/contact' }}
+        title={<>{sv.cta.title.before}<GradientText>{sv.cta.title.highlight}</GradientText>{sv.cta.title.after}</>}
+        description={sv.cta.description}
+        primary={{ label: sv.cta.primary, to: to('/contact') }}
       />
     </div>
   )
@@ -233,18 +145,23 @@ function ProcessStep({ number, title, description }: { number: string; title: st
 }
 
 function PricingCard({
+  href,
   name,
   price,
   description,
   features,
-  popular
+  buttonText,
+  popularLabel
 }: {
+  href: string
   name: string
   price: string
   description: string
   features: string[]
-  popular?: boolean
+  buttonText: string
+  popularLabel?: string
 }) {
+  const popular = Boolean(popularLabel)
   return (
     <div className={`p-5 md:p-8 rounded-2xl transition-all duration-300 hover:scale-[1.03] ${
       popular
@@ -253,11 +170,11 @@ function PricingCard({
     }`}>
       {popular && (
         <span className="inline-block px-3 py-1 bg-neon-green text-white text-xs font-bold rounded-full mb-4">
-          MOST POPULAR
+          {popularLabel}
         </span>
       )}
       <h3 className="text-lg md:text-xl font-bold text-white">{name}</h3>
-      <p className="text-3xl md:text-4xl font-bold text-white mt-2">{price}</p>
+      <p className="text-3xl md:text-4xl font-bold text-white mt-2 whitespace-nowrap">{price}</p>
       <p className="text-sm md:text-base text-zinc-500 mt-2 mb-4 md:mb-6">{description}</p>
       <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8">
         {features.map((feature, index) => (
@@ -268,14 +185,14 @@ function PricingCard({
         ))}
       </ul>
       <Link
-        href="/contact"
+        href={href}
         className={`block w-full py-3 text-center rounded-lg font-semibold transition-all duration-300 text-sm md:text-base ${
           popular
             ? 'bg-neon-green text-white shadow-neon-btn hover:shadow-neon-btn-hover'
             : 'border border-dark-border text-white hover:border-neon-green hover:shadow-neon'
         }`}
       >
-        Get Started
+        {buttonText}
       </Link>
     </div>
   )

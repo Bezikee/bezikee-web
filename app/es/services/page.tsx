@@ -1,8 +1,8 @@
 import { Services } from '../../../src/views/Services'
 import { pageMetadata } from '../../../src/seo'
 
-export const metadata = pageMetadata('services', 'en')
+export const metadata = pageMetadata('services', 'es')
 
 export default function Page() {
-  return <Services locale="en" />
+  return <Services locale="es" />
 }
