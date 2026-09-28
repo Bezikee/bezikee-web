@@ -23,7 +23,7 @@ export type AppSettings = {
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  defaultQuote: 450,
+  defaultQuote: 500,
   currency: "EUR",
   emailSubject: DEFAULT_EMAIL_SUBJECT,
   emailTemplate: DEFAULT_EMAIL_TEMPLATE,

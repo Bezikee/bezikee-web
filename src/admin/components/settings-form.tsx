@@ -89,14 +89,14 @@ export function SettingsForm({
       <section className="rounded-xl border border-line bg-card p-5">
         <h2 className="text-sm font-semibold tracking-tight">Pricing</h2>
         <p className="mt-1 text-xs text-ink-muted">
-          The quote each new lead starts with. It fills <code className="font-mono">{"{{quote}}"}</code> in
-          the pitch email.
+          What a website costs. It fills <code className="font-mono">{"{{quote}}"}</code> in every
+          pitch email, except for a lead given a price of its own on its page.
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <label className="block text-xs text-ink-muted" htmlFor="defaultQuote">
-              Default quote
+              Price per website
             </label>
             <input
               id="defaultQuote"

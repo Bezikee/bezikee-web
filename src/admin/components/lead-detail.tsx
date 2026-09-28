@@ -67,9 +67,14 @@ export function LeadDetail(props: LeadDetailProps) {
   const router = useRouter();
 
   const [status, setStatus] = useState<LeadStatus>(props.status);
+  // Blank means "the price from Settings". Only a number typed here is saved on
+  // the lead, so changing the price in Settings reaches every lead that hasn't
+  // been given one of its own.
   const [quote, setQuote] = useState<string>(
-    props.quoteAmount != null ? String(props.quoteAmount) : String(props.defaultQuote),
+    props.quoteAmount != null ? String(props.quoteAmount) : "",
   );
+  const effectiveQuote = quote === "" ? props.defaultQuote : Number(quote);
+  const settingsPrice = formatQuote(props.defaultQuote, props.currency, props.email.language ?? "es");
   const [demoUrl, setDemoUrl] = useState(props.demoUrl ?? "");
   const [notes, setNotes] = useState(props.notes ?? "");
   const [saving, setSaving] = useState(false);
@@ -92,16 +97,16 @@ export function LeadDetail(props: LeadDetailProps) {
       category: props.categoryLabel,
       area: props.areaName ?? "",
       demo_url: demoUrl,
-      quote: formatQuote(Number(quote) || null, props.currency, props.email.language ?? "es"),
+      quote: formatQuote(effectiveQuote, props.currency, props.email.language ?? "es"),
     }),
-    [props.businessName, props.categoryLabel, props.areaName, props.currency, props.email.language, demoUrl, quote],
+    [props.businessName, props.categoryLabel, props.areaName, props.currency, props.email.language, demoUrl, effectiveQuote],
   );
 
   const previewSubject = renderTemplate(subject, vars);
   const previewBody = renderTemplate(body, vars);
   const missing = [...new Set([...missingVariables(subject, vars), ...missingVariables(body, vars)])];
   const validTo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim());
-  const dirty = demoUrl !== (props.demoUrl ?? "") || quote !== String(props.quoteAmount ?? props.defaultQuote);
+  const dirty = demoUrl !== (props.demoUrl ?? "") || quote !== String(props.quoteAmount ?? "");
   const blocker = !validTo
     ? "Add the owner's email address."
     : missing.length > 0
@@ -197,7 +202,7 @@ export function LeadDetail(props: LeadDetailProps) {
 
           <div>
             <label className="block text-xs text-ink-muted" htmlFor="quote">
-              Quote ({props.currency})
+              Price ({props.currency})
             </label>
             <input
               id="quote"
@@ -205,8 +210,14 @@ export function LeadDetail(props: LeadDetailProps) {
               min={0}
               value={quote}
               onChange={(e) => setQuote(e.target.value)}
+              placeholder={String(props.defaultQuote)}
               className="tnum mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm"
             />
+            <p className="mt-1 text-xs text-ink-muted">
+              {quote === ""
+                ? `The Settings price, ${settingsPrice}.`
+                : `Just this lead. Clear it to use ${settingsPrice}.`}
+            </p>
           </div>
 
           <div>
@@ -325,7 +336,7 @@ export function LeadDetail(props: LeadDetailProps) {
             />
             <p className="mt-1 text-xs text-ink-muted">
               <code className="font-mono">{"{{demo_url}}"}</code> becomes the demo link and{" "}
-              <code className="font-mono">{"{{quote}}"}</code> the quote above.
+              <code className="font-mono">{"{{quote}}"}</code> the price above.
             </p>
           </div>
 

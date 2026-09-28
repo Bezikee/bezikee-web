@@ -78,7 +78,7 @@ export function normalizePhone(
   return digits;
 }
 
-/** Number formatting per pitch language, so "450 €" reads right in Spanish and "€450" in English. */
+/** Number formatting per pitch language, so "500 €" reads right in Spanish and "€500" in English. */
 const QUOTE_LOCALE: Record<string, string> = {
   es: "es-ES",
   en: "en-GB",
